@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.backend2.domain.winner.entity
 
 import com.example.backend2.domain.auction.entity.Auction
@@ -7,37 +9,34 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "WINNER_TABLE")
-class Winner {
+data class Winner(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "WINNER_ID")
-    var winnerId: Long? = null
-
+    val winnerId: Long? = null,
     @ManyToOne
     @JoinColumn(name = "USER_UUID", nullable = false)
-    lateinit var user: User
-
+    val user: User,
     @OneToOne
     @JoinColumn(name = "AUCTION_ID", nullable = false)
-    lateinit var auction: Auction
-
+    val auction: Auction,
     @Column(name = "WINNING_BID")
-    var winningBid: Int? = null
-
+    val winningBid: Int? = 0,
     @Column(name = "WIN_TIME")
-    lateinit var winTime: LocalDateTime
-
-    constructor()
-
-    constructor(
-        user: User,
-        auction: Auction,
-        winningBid: Int?,
-        winTime: LocalDateTime
-    ) {
-        this.user = user
-        this.auction = auction
-        this.winningBid = winningBid
-        this.winTime = winTime
+    val winTime: LocalDateTime,
+) {
+    companion object {
+        fun createWinner(
+            user: User,
+            auction: Auction,
+            winningBid: Int?,
+            winTime: LocalDateTime,
+        ): Winner =
+            Winner(
+                user = user,
+                auction = auction,
+                winningBid = winningBid,
+                winTime = winTime,
+            )
     }
 }

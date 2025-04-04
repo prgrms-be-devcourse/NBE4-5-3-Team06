@@ -1,6 +1,7 @@
 package com.example.backend2.global.app
 
 import com.example.backend2.global.filter.JwtAuthenticationFilter
+import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer
@@ -10,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
 
-@org.springframework.context.annotation.Configuration
+@Configuration
 @EnableWebSecurity
 class SecurityConfig {
     // 비밀번호 인코더
@@ -28,7 +29,7 @@ class SecurityConfig {
         http
             .cors { cors -> cors.configurationSource(corsConfigurationSource()) } // CORS 설정 (필요 시 disable 또는 설정)
             .csrf { csrf -> csrf.disable() } // CSRF 설정
-            .headers { headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable) } // H2 콘솔을 위한 iframe 허용
+            .headers {it.frameOptions{ frame -> frame.disable() } } // H2 콘솔을 위한 iframe 허용
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // Preflight 요청 허용

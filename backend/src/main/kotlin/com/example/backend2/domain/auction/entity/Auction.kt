@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.backend2.domain.auction.entity
 
 import com.example.backend2.data.AuctionStatus
@@ -10,69 +12,58 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "AUCTION_TABLE")
-class Auction {
+data class Auction(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "AUCTION_ID")
-    var auctionId: Long? = null
-
+    val auctionId: Long? = null,
     @OneToOne
     @JoinColumn(name = "PRODUCT_ID", nullable = false)
-    lateinit var product: Product
-
+    val product: Product = Product(),
     @Column(name = "START_PRICE")
-    var startPrice: Int? = null
-
+    val startPrice: Int = 0,
     @Column(name = "MIN_BID")
-    var minBid: Int? = null
-
+    val minBid: Int = 0,
     @Column(name = "START_TIME")
-    lateinit var startTime: LocalDateTime
-
+    val startTime: LocalDateTime = LocalDateTime.now(),
     @Column(name = "END_TIME")
-    lateinit var endTime: LocalDateTime
-
+    val endTime: LocalDateTime = LocalDateTime.now(),
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS")
-    lateinit var status: AuctionStatus
-
+    val status: AuctionStatus = AuctionStatus.UPCOMING,
     @OneToOne(mappedBy = "auction", cascade = [CascadeType.ALL])
-    var winner: Winner? = null
-
+    val winner: Winner? = null,
     @OneToMany(mappedBy = "auction", cascade = [CascadeType.ALL])
-    var bids: MutableList<Bid>? = mutableListOf()
-
+    val bids: MutableList<Bid> = mutableListOf(),
     @CreatedDate
-    var createdAt: LocalDateTime? = null
-
-    constructor()
-
-    constructor(
-        product: Product,
-        startPrice: Int?,
-        minBid: Int?,
-        startTime: LocalDateTime,
-        endTime: LocalDateTime,
-        status: AuctionStatus,
-        winner: Winner?,
-        bids: MutableList<Bid> = mutableListOf(),
-    ) {
-        this.product = product
-        this.startPrice = 0
-        this.minBid = 0
-        this.startTime = startTime
-        this.endTime = endTime
-        this.status = status
-        this.winner = winner
-        this.bids = bids
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+) {
+    companion object {
+        fun createAuction(
+            product: Product,
+            startPrice: Int?,
+            minBid: Int?,
+            startTime: LocalDateTime,
+            endTime: LocalDateTime,
+            status: AuctionStatus,
+            winner: Winner? = null,
+            bids: MutableList<Bid> = mutableListOf(),
+        ): Auction =
+            Auction(
+                product = product,
+                startPrice = startPrice ?: 0,
+                minBid = minBid ?: 0,
+                startTime = startTime,
+                endTime = endTime,
+                status = status,
+                winner = winner,
+                bids = bids,
+            )
     }
 
-    fun setStatus(status: AuctionStatus) {
-        this.status = status;
-    }
+    // 상태 변경
+    fun setStatus(status: AuctionStatus): Auction = copy(status = status)
 
     // 낙찰자 설정 메서드
-    fun setWinner(winner: Winner) {
-        this.winner = winner;
-    }
+    fun setWinner(winner: Winner): Auction = copy(winner = winner)
 }
