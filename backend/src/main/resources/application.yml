@@ -1,0 +1,68 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: "pk2258"
+
+  profiles:
+    active: dev
+
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+
+  datasource:
+    url: jdbc:mysql://localhost/kotlinBidFlow?useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: pk2258
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      auto-commit: false
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  mail:
+    host: smtp.gmail.com # Gmail SMTP 서버 호스트
+    port: 465 # Gmail SMTP 포트 (SSL을 사용할 경우 465)
+    username: bid.system.info@gmail.com # 이메일 발송에 사용할 Gmail 주소
+    password: tskqfpdczojlwfbh # 구글 앱 비밀번호 (2단계 인증 시 필요)
+    protocol: smtps # 이메일 전송에 사용할 프로토콜 (smtps는 SSL 보안 사용)
+
+    properties:
+      mail:
+        smtp:
+          auth: true # SMTP 서버 인증 사용 여부 (true로 설정)
+          timeout: 20000 # SMTP 서버와의 통신 시 대기 시간 (20초, 밀리초 단위)
+          connectiontimeout: 20000 # SMTP 서버와의 연결 시도 시간 (20초, 밀리초 단위)
+          writetimeout: 20000 # SMTP 서버로 데이터 전송 시 대기 시간 (20초, 밀리초 단위)
+          starttls:
+            enable: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE
+  slack:
+    webhook-uri: https://hooks.slack.com/services/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
+  config: classpath:logback-spring.xml
+
+springdoc:
+  default-produces-media-type: application/json;charset=UTF-8
