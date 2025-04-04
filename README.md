@@ -78,25 +78,43 @@
 <br/>
 
 ### 🌐 통신 및 네트워크
+<div align="left">
+  <img src="https://img.shields.io/badge/WebSocket-000000?style=for-the-badge&logo=websocket&logoColor=white" alt="WebSocket" />
+  <img src="https://img.shields.io/badge/STOMP-82B541?style=for-the-badge&logoColor=white" alt="STOMP" />
+</div>
 
 <br/>
 
 ### 🔗 버전 관리 및 협업 도구
+<div align="left">
+  <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
+  <img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white" alt="Notion" />
+  <img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" />
+  <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white" alt="Slack" />
+  <img src="https://img.shields.io/badge/ZEP-FF9E0F?style=for-the-badge&logoColor=white" alt="ZEP" />
+</div>
 
 
 
 ## ERD
+![image](https://github.com/user-attachments/assets/0b2cbdbc-453f-42c6-887f-2ebd5da7b191)
 
 ## System Architecture
+![image](https://github.com/user-attachments/assets/e61edb51-05f2-4cbc-bdac-2539bd9ad81a)
 
 
 ## Sequence Diagram
+[[sequenceDiagram] 06팀_2차 팀프로젝트.pdf](https://github.com/user-attachments/files/19291195/sequenceDiagram.06._2.pdf)
 
 
 ## 브랜치 전략
+[🔧 GitHub Flow Convention 🔧](https://github.com/prgrms-be-devcourse/NBE4-5-2-Team06/wiki/%F0%9F%94%A7-GitHub-Flow-Convention)
 
 ## API 명세서
+[🔖 API 명세서🔖 ](https://navy-barberry-faa.notion.site/API-1b83d2ba3c9c801990f6d1c47e5a4926?pvs=4)
 <br/>
 <br/>
 
 ## 컨벤션
+
+[📌 Code Convention 📌](https://github.com/prgrms-be-devcourse/NBE4-5-1-Team07/wiki/%F0%9F%93%8C-Code-Convention)
