@@ -1,5 +1,7 @@
 package com.example.backend2.domain.user.dto
 
+import com.example.backend2.domain.user.entity.User
+
 data class UserSignInResponse(
     val token: String, // 발급된 JWT 토큰
     val userUUID: String, // 사용자 고유 식별자

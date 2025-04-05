@@ -1,5 +1,6 @@
 package com.example.backend2.domain.user.dto
 
+import com.example.backend2.domain.user.entity.User
 import java.time.LocalDateTime
 
 data class UserCheckRequest(
