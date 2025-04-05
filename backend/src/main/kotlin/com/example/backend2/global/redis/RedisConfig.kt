@@ -11,16 +11,11 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.StringRedisSerializer
 
 @Configuration
-class RedisConfig {
-    @Value("\${spring.data.redis.host}")
-    private lateinit val host: String
-
-    @Value("\${spring.data.redis.port}")
-    private val port: Int = 0
-
-    @Value("\${spring.data.redis.password}")
-    private lateinit val password: String
-
+class RedisConfig(
+    @Value("\${spring.data.redis.host}") private val host: String,
+    @Value("\${spring.data.redis.port}") private val port: Int,
+    @Value("\${spring.data.redis.password}") private val password: String,
+) {
     @Bean
     fun redisConnectionFactory(): RedisConnectionFactory {
         val configuration = RedisStandaloneConfiguration(host, port)

@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.backend2.global.utils
 
 import io.jsonwebtoken.*
@@ -8,8 +10,12 @@ import javax.crypto.SecretKey
 
 @Component
 class JwtProvider {
-    private val secretKey: SecretKey = Keys.hmacShaKeyFor("ff124f1-51e8-775g-66ru-eer8e7ntefffb2e123456789012345".toByteArray())
-    private val expirationTime: Long = 1000L * 60 * 60 * 24 // 24 hours in milliseconds
+    companion object {
+        private const val SECRET = "ff124f1-51e8-775g-66ru-eer8e7ntefffb2e123456789012345"
+        private const val EXPIRATION_TIME: Long = 1000L * 60 * 60 * 24 // 24시간
+    }
+
+    private val secretKey: SecretKey = Keys.hmacShaKeyFor(SECRET.toByteArray())
 
     fun generateToken(
         claims: Map<String, Any>,
@@ -20,7 +26,7 @@ class JwtProvider {
             .setClaims(claims)
             .setSubject(email)
             .setIssuedAt(Date())
-            .setExpiration(Date(System.currentTimeMillis() + expirationTime))
+            .setExpiration(Date(System.currentTimeMillis() + EXPIRATION_TIME))
             .signWith(secretKey, SignatureAlgorithm.HS256)
             .compact()
 
@@ -32,23 +38,24 @@ class JwtProvider {
             .parseSignedClaims(token)
             .payload
 
-    fun parseUserUUID(token: String): String? = parseClaims(token).get("userUUID", String::class.java)
+    fun parseUserUUID(token: String): String? = getClaim(token, "userUUID")
 
-    fun parseNickname(token: String): String? = parseClaims(token).get("nickname", String::class.java)
+    fun parseNickname(token: String): String? = getClaim(token, "nickname")
 
-    fun parseRole(token: String): String? = parseClaims(token).get("role", String::class.java)
+    fun parseRole(token: String): String? = getClaim(token, "role")
+
+    fun getUsername(token: String): String? = parseClaims(token).subject
 
     fun validateToken(token: String): Boolean =
         try {
-            Jwts
-                .parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
+            parseClaims(token)
             true
         } catch (e: JwtException) {
             false
         }
 
-    fun getUsername(token: String): String? = parseClaims(token).subject
+    private fun getClaim(
+        token: String,
+        key: String,
+    ): String? = parseClaims(token).get(key, String::class.java)
 }

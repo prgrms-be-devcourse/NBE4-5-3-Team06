@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package com.example.backend2.domain.user.repository
 
 import com.example.backend2.domain.user.entity.User

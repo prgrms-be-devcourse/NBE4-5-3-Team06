@@ -19,4 +19,4 @@ data class UserSignInResponse(
                 nickname = user.nickname,
             )
     }
-} 
+}

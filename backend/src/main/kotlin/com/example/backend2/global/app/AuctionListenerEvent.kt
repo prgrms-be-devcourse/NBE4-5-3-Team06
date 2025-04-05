@@ -41,8 +41,8 @@ class AuctionListenerEvent(
             log.warn("[AuctionEvent] 입찰자 없음 - 경매 ID: auctionId ")
             return
         }
-
-        val user: User? = userRepository.findByUserUUID(userUUID)
+        // 경매 정보 확인
+        val user: User? = userRepository.findByUserUUID(userUUID).orElse(null)
         if (user == null) {
             log.warn("[AuctionEvent] 사용자 없음 - UUID: $userUUID , 경매 ID: auctionId")
             return

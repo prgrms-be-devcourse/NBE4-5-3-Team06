@@ -11,4 +11,4 @@ data class UserSignUpResponse(
                 userUUID = user.userUUID,
             )
     }
-} 
+}

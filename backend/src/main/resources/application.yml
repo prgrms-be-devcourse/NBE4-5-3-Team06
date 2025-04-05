@@ -1,1 +1,9 @@
-spring.application.name=backend2
+server:
+  port: 8080
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: "pk2258"

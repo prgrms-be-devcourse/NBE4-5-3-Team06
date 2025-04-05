@@ -22,7 +22,6 @@ class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
     private val jwtBlacklistService: JwtBlacklistService,
 ) : OncePerRequestFilter() {
-
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -48,12 +47,13 @@ class JwtAuthenticationFilter(
                 println("Extracted Role: $role")
 
                 // 직접 UserDetails 생성
-                val userDetails: UserDetails = User
-                    .builder()
-                    .username(username)
-                    .password("") // 비밀번호는 인증에 필요하지 않음
-                    .authorities(SimpleGrantedAuthority(role)) // 권한 설정
-                    .build()
+                val userDetails: UserDetails =
+                    User
+                        .builder()
+                        .username(username)
+                        .password("") // 비밀번호는 인증에 필요하지 않음
+                        .authorities(SimpleGrantedAuthority(role)) // 권한 설정
+                        .build()
 
                 println("Authorities: ${userDetails.authorities}")
 

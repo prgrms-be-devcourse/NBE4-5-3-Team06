@@ -36,4 +36,4 @@ class AuctionController(
         val rsData = RsData("200", "경매가 성공적으로 조회되었습니다.", response)
         return ResponseEntity.ok(rsData)
     }
-} 
+}

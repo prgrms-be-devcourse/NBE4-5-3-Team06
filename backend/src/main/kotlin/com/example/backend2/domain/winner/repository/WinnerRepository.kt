@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface WinnerRepository : JpaRepository<Winner, Long> {
-    fun findByUser_UserUUID(userUUID: String): List<Winner>
+    fun findByUserUserUUID(userUUID: String): List<Winner>
 }

@@ -15,4 +15,4 @@ data class UserPutRequest(
                 email = user.email,
             )
     }
-} 
+}
