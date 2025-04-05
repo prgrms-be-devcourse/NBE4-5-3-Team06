@@ -15,13 +15,13 @@ data class User(
     @Column(name = "USER_UUID", nullable = false, length = 50)
     val userUUID: String,
     @Column(name = "EMAIL", nullable = false, unique = true)
-    val email: String,
+    var email: String,
     @Column(name = "NICKNAME", nullable = false, unique = true)
-    val nickname: String,
+    var nickname: String,
     @Column(name = "PASSWORD", nullable = false)
     val password: String,
     @Column(name = "profileImage", columnDefinition = "TEXT")
-    val profileImage: String? = null,
+    var profileImage: String? = null,
     @Column(name = "CREATED_DATE")
     val createdDate: LocalDateTime = LocalDateTime.now(),
     @Column(name = "MODIFIED_AT")
@@ -30,19 +30,7 @@ data class User(
     @Column(name = "ROLE")
     val role: Role,
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL])
-    val winners: MutableList<Winner> = mutableListOf(),
+    val winners: List<Winner> = mutableListOf(),
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL])
-    val bids: MutableList<Bid> = mutableListOf(),
-) {
-    fun setNickname(nickname: String) {
-        this.nickname = nickname
-    }
-
-    fun setProfileImage(profileImage: String?) {
-        this.profileImage = profileImage
-    }
-
-    fun setEmail(email: String) {
-        this.email = email
-    }
-}
+    val bids: List<Bid> = mutableListOf(),
+)
