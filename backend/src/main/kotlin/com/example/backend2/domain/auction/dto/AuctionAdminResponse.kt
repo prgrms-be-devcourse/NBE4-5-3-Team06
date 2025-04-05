@@ -35,7 +35,7 @@ data class AuctionAdminResponse(
 
             return if (auction.status.name == "FINISHED" && auction.winner != null) {
                 builder.copy(
-                    nickname = auction.winner.user?.nickname ?: "없음",
+                    nickname = auction.winner.user.nickname ?: "없음",
                     winningBid = auction.winner.winningBid ?: 0,
                     winTime = auction.winner.winTime,
                 )
