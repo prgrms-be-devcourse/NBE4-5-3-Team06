@@ -2,6 +2,7 @@ package com.example.backend2.domain.auction.controller
 
 import com.example.backend2.domain.auction.dto.AuctionCheckResponse
 import com.example.backend2.domain.auction.dto.AuctionDetailResponse
+import com.example.backend2.domain.auction.service.AuctionService
 import com.example.backend2.global.dto.RsData
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
