@@ -21,8 +21,8 @@ data class AuctionCheckResponse(
             val base =
                 AuctionCheckResponse(
                     auctionId = auction.auctionId,
-                    productName = auction.product.productName,
-                    imageUrl = auction.product.imageUrl ?: "",
+                    productName = auction.product?.productName ?: "",
+                    imageUrl = auction.product?.imageUrl ?: "",
                     currentBid = currentBid,
                     status = auction.status.toString(),
                     startTime = auction.startTime,

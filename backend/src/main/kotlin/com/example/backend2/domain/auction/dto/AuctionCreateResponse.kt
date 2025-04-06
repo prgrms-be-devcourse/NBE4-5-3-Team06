@@ -9,10 +9,12 @@ data class AuctionCreateResponse(
 ) {
     companion object {
         fun from(auction: Auction): AuctionCreateResponse {
+            val product = auction.product ?: throw IllegalStateException("Product cannot be null for auction creation")
+            
             val base =
                 AuctionCreateResponse(
                     auction = AuctionCreateDataResponse.from(auction),
-                    product = ProductResponse.from(auction.product),
+                    product = ProductResponse.from(product),
                 )
 
             return base

@@ -19,7 +19,7 @@ data class Auction(
     val auctionId: Long? = null,
     @OneToOne
     @JoinColumn(name = "PRODUCT_ID", nullable = false)
-    val product: Product = Product(),
+    val product: Product? = null,
     @Column(name = "START_PRICE")
     val startPrice: Int = 0,
     @Column(name = "MIN_BID")
@@ -40,7 +40,7 @@ data class Auction(
 ) {
     companion object {
         fun createAuction(
-            product: Product,
+            product: Product?,
             startPrice: Int?,
             minBid: Int?,
             startTime: LocalDateTime,

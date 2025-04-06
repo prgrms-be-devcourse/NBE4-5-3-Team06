@@ -19,20 +19,5 @@ data class Product(
     @Column(name = "DESCRIPTION")
     val description: String? = null,
     @OneToOne(mappedBy = "product", cascade = [CascadeType.ALL])
-    val auction: Auction = Auction(),
-) {
-    companion object {
-        fun createProduct(
-            productName: String,
-            imageUrl: String?,
-            description: String?,
-            auction: Auction,
-        ): Product =
-            Product(
-                productName = productName,
-                imageUrl = imageUrl,
-                description = description,
-                auction = auction,
-            )
-    }
-}
+    val auction: Auction? = null,
+)

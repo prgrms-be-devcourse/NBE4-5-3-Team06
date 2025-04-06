@@ -17,11 +17,11 @@ data class WinnerCheckResponse(
             val base =
                 WinnerCheckResponse(
                     auctionId = winner.auction.auctionId ?: 0,
-                    productName = winner.auction.product.productName,
-                    description = winner.auction.product.description ?: "",
+                    productName = winner.auction.product?.productName ?: "",
+                    description = winner.auction.product?.description ?: "",
                     winningBid = winner.winningBid ?: 0,
                     winTime = winner.winTime,
-                    imageUrl = winner.auction.product.imageUrl ?: "",
+                    imageUrl = winner.auction.product?.imageUrl ?: "",
                 )
             return base
         }

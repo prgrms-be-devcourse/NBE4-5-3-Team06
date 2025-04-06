@@ -1,6 +1,7 @@
 package com.example.backend2.global.messaging.publisher
 
 import com.example.backend2.global.messaging.dto.MessagePayload
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 
 /**
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Component
 @Component
 class RedisMessagePublisher(
     val redisTemplate: RedisTemplate<String, Any>,
-) : MessagePublisher<MessagePayload?> {
+) : MessagePublisher<MessagePayload> {
     override fun publish(
         topic: String,
         message: MessagePayload,

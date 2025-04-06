@@ -19,10 +19,12 @@ data class AuctionDetailResponse(
             auction: Auction,
             amount: Int,
         ): AuctionDetailResponse {
+            val product = auction.product ?: throw IllegalStateException("Product cannot be null for auction detail")
+            
             val base =
                 AuctionDetailResponse(
                     auctionId = auction.auctionId,
-                    product = ProductResponse.from(auction.product),
+                    product = ProductResponse.from(product),
                     startPrice = auction.startPrice,
                     currentBid = amount,
                     minBid = auction.minBid,

@@ -1,4 +1,4 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
+@file:Suppress("ktlint:standard:no-wildcard-imports") // 코틀린
 
 package com.example.backend2.domain.user.service
 
@@ -97,11 +97,12 @@ class UserService(
                 .orElseThrow { ServiceException("404", "사용자 정보를 찾을 수 없습니다.") }
 
         // copy()를 사용하여 필요한 속성만 변경
-        val updatedUser = user.copy(
-            nickname = request.nickname ?: user.nickname,
-            profileImage = request.profileImage ?: user.profileImage,
-            email = request.email ?: user.email
-        )
+        val updatedUser =
+            user.copy(
+                nickname = request.nickname ?: user.nickname,
+                profileImage = request.profileImage ?: user.profileImage,
+                email = request.email ?: user.email,
+            )
 
         return UserPutRequest.from(userRepository.save(updatedUser))
     }

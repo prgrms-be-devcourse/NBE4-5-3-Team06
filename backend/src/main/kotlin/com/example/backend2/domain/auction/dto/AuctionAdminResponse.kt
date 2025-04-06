@@ -24,8 +24,8 @@ data class AuctionAdminResponse(
             val builder =
                 AuctionAdminResponse(
                     auctionId = auction.auctionId,
-                    productName = auction.product.productName,
-                    imageUrl = auction.product.imageUrl ?: "",
+                    productName = auction.product?.productName ?: "",
+                    imageUrl = auction.product?.imageUrl,
                     startPrice = auction.startPrice,
                     currentPrice = currentPrice,
                     status = auction.status.name,
