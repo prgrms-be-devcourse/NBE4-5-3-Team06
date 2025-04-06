@@ -8,11 +8,15 @@ data class UserPutRequest(
     val email: String? = null,
 ) {
     companion object {
-        fun from(user: User): UserPutRequest =
-            UserPutRequest(
-                profileImage = user.profileImage,
-                nickname = user.nickname,
-                email = user.email,
-            )
+        fun from(user: User): UserPutRequest {
+            val base =
+                UserPutRequest(
+                    profileImage = user.profileImage,
+                    nickname = user.nickname,
+                    email = user.email,
+                )
+
+            return base
+        }
     }
 }

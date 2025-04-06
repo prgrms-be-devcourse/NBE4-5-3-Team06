@@ -11,13 +11,17 @@ data class UserCheckRequest(
     val profileImage: String?,
 ) {
     companion object {
-        fun from(user: User): UserCheckRequest =
-            UserCheckRequest(
-                userUUID = user.userUUID,
-                nickname = user.nickname,
-                email = user.email,
-                createdAt = user.createdDate,
-                profileImage = user.profileImage,
-            )
+        fun from(user: User): UserCheckRequest {
+            val base =
+                UserCheckRequest(
+                    userUUID = user.userUUID,
+                    nickname = user.nickname,
+                    email = user.email,
+                    createdAt = user.createdDate,
+                    profileImage = user.profileImage,
+                )
+
+            return base
+        }
     }
 }

@@ -12,11 +12,14 @@ data class UserSignInResponse(
         fun from(
             user: User,
             token: String,
-        ): UserSignInResponse =
-            UserSignInResponse(
-                userUUID = user.userUUID,
-                token = token,
-                nickname = user.nickname,
-            )
+        ): UserSignInResponse {
+            val base =
+                UserSignInResponse(
+                    token = token,
+                    userUUID = user.userUUID,
+                    nickname = user.nickname,
+                )
+            return base
+        }
     }
 }

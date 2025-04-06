@@ -5,7 +5,7 @@ import com.example.backend2.domain.bid.dto.BidCreateResponse
 import com.example.backend2.domain.bid.service.BidService
 import com.example.backend2.global.utils.JwtProvider
 import com.example.backend2.global.websocket.dto.WebSocketResponse
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -20,7 +20,7 @@ class BidController(
     private val jwtProvider: JwtProvider,
     private val simpMessagingTemplate: SimpMessagingTemplate,
 ) {
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = KotlinLogging.logger {}
 
 // 경매 입찰 컨트롤러
     @MessageMapping("/auction/bid")
@@ -30,7 +30,7 @@ class BidController(
         val userUUID = jwtProvider.parseUserUUID(request.token)
         val nickname = jwtProvider.parseNickname(request.token)
 
-        log.info("입찰 요청 수신, userUUID: $userUUID, nickname: $nickname, auctionId: ${request.auctionId}, amount: ${request.amount}")
+        log.info { "입찰 요청 수신, userUUID: $userUUID, nickname: $nickname, auctionId: ${request.auctionId}, amount: ${request.amount}" }
 
         val response: BidCreateResponse = bidService.createBid(request.auctionId, request)
         // 입찰 성공 시 Websocket 메시지 보낼 데이터
@@ -44,6 +44,6 @@ class BidController(
             )
 
         simpMessagingTemplate.convertAndSend("/topic/auction/${request.auctionId}", res)
-        log.info("입찰 브로드캐스트 완료: /sub/auction/${request.auctionId}")
+        log.info { "입찰 브로드캐스트 완료: /sub/auction/${request.auctionId}" }
     }
 }

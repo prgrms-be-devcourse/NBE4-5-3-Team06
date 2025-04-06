@@ -7,7 +7,6 @@ import com.example.backend2.data.Role
 import com.example.backend2.domain.auction.dto.*
 import com.example.backend2.domain.auction.entity.Auction
 import com.example.backend2.domain.auction.repository.AuctionRepository
-import com.example.backend2.domain.bid.repository.BidRepository
 import com.example.backend2.domain.product.entity.Product
 import com.example.backend2.domain.product.repository.ProductRepository
 import com.example.backend2.global.annotation.HasRole
@@ -16,13 +15,13 @@ import com.example.backend2.global.exception.ServiceException
 import com.example.backend2.global.redis.RedisCommon
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.transaction.Transactional
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
 class AuctionService(
     private val auctionRepository: AuctionRepository,
-    private val bidRepository: BidRepository,
     private val productRepository: ProductRepository,
     private val redisCommon: RedisCommon,
 ) {
@@ -70,14 +69,18 @@ class AuctionService(
         // 경매 종료 시간이 시작 시간보다 빠르면 예외 처리
         requestDto.startTime?.let { startTime ->
             requestDto.endTime?.let { endTime ->
-                require(!startTime.isAfter(endTime)) { "경매 종료 시간이 시작 시간보다 빠를 수 없습니다." }
+                if (startTime.isAfter(endTime)) {
+                    throw ServiceException(HttpStatus.BAD_REQUEST.value().toString(), "경매 종료 시간이 시작 시간보다 빠를 수 없습니다.")
+                }
             }
         }
 
         // 최소 등록 시간 검증 (현재 시간 기준 최소 2일 전)
         requestDto.startTime?.let { startTime ->
             val now = LocalDateTime.now()
-            require(!startTime.isBefore(now.plusDays(2))) { "상품 등록 시간은 최소 2일 전부터 가능합니다." }
+            if (startTime.isBefore(now.plusDays(2))) {
+                throw ServiceException(HttpStatus.BAD_REQUEST.value().toString(), "상품 등록 시간은 최소 2일 전부터 가능합니다.")
+            }
         }
 
         // 상품 정보 저장
@@ -123,7 +126,7 @@ class AuctionService(
     fun closeAuction(auctionId: Long) {
         val auction =
             auctionRepository.findByAuctionId(auctionId)
-                ?: throw IllegalArgumentException("진행 중인 경매를 찾을 수 없습니다.")
+                ?: throw ServiceException(HttpStatus.NOT_FOUND.value().toString(), "진행 중인 경매를 찾을 수 없습니다.")
 
         auction.setStatus(AuctionStatus.FINISHED)
     }

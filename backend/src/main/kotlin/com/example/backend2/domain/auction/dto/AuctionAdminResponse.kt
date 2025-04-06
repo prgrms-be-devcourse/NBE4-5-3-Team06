@@ -21,7 +21,7 @@ data class AuctionAdminResponse(
             auction: Auction,
             currentPrice: Int,
         ): AuctionAdminResponse {
-            val builder =
+            val base =
                 AuctionAdminResponse(
                     auctionId = auction.auctionId,
                     productName = auction.product?.productName ?: "",
@@ -34,13 +34,13 @@ data class AuctionAdminResponse(
                 )
 
             return if (auction.status.name == "FINISHED" && auction.winner != null) {
-                builder.copy(
+                base.copy(
                     nickname = auction.winner.user.nickname ?: "없음",
                     winningBid = auction.winner.winningBid ?: 0,
                     winTime = auction.winner.winTime,
                 )
             } else {
-                builder.copy(
+                base.copy(
                     nickname = "없음",
                     winningBid = 0,
                     winTime = null,

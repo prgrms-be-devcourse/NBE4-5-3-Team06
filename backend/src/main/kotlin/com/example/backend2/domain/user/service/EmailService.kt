@@ -84,18 +84,18 @@ class EmailService(
             throw ServiceException("400", "인증시간이 만료되었습니다.")
         }
 
-        if (storedCode == code) {
-            redisCommon.putInHash(hashKey, "verify", "true")
-            redisCommon.setExpireAt(hashKey, LocalDateTime.now().plusSeconds(EMAIL_AUTH_EXPIRATION.toLong()))
-
-            log.error("Verification code matched for email(인증 코드 불일치): {}", email)
-
-            return true
+        return when (storedCode == code) {
+            true -> {
+                redisCommon.putInHash(hashKey, "verify", "true")
+                redisCommon.setExpireAt(hashKey, LocalDateTime.now().plusSeconds(EMAIL_AUTH_EXPIRATION.toLong()))
+                log.error { "Verification code matched for email(인증 코드 불일치): $email" }
+                true
+            }
+            false -> {
+                log.error { "Verification code does not match for email(뭔가 문제가 생김(인증은 통과)): $email" }
+                false
+            }
         }
-
-        log.error("Verification code does not match for email(뭔가 문제가 생김(인증은 통과)): {}", email)
-
-        return false
     }
 
     fun isVerified(email: String): Boolean {

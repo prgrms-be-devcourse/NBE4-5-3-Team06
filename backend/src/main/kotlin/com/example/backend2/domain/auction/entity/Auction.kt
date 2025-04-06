@@ -38,29 +38,6 @@ data class Auction(
     @CreatedDate
     val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
-    companion object {
-        fun createAuction(
-            product: Product?,
-            startPrice: Int?,
-            minBid: Int?,
-            startTime: LocalDateTime,
-            endTime: LocalDateTime,
-            status: AuctionStatus,
-            winner: Winner? = null,
-            bids: MutableList<Bid> = mutableListOf(),
-        ): Auction =
-            Auction(
-                product = product,
-                startPrice = startPrice ?: 0,
-                minBid = minBid ?: 0,
-                startTime = startTime,
-                endTime = endTime,
-                status = status,
-                winner = winner,
-                bids = bids,
-            )
-    }
-
     // 상태 변경
     fun setStatus(status: AuctionStatus): Auction = copy(status = status)
 

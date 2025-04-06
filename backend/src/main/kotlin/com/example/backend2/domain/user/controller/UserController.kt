@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
+@Suppress("ktlint:standard:no-consecutive-comments")
 @RestController
 @RequestMapping("/api/auth")
 class UserController(
@@ -33,6 +34,18 @@ class UserController(
 
         return ResponseEntity.status(HttpStatus.CREATED).body(rsData)
     }
+
+    // Explain: 회원가입 컨트롤러를 더 간단하게 처리 => 임시 기록
+    /*@PostMapping("/signup")
+    fun signup(
+        @RequestBody request: UserSignUpRequest,
+    ): ResponseEntity<RsData<UserSignUpResponse>> =
+        userService
+            .signup(request)
+            .toResponseEntity(
+                status = HttpStatus.CREATED,
+                message = "회원가입이 완료되었습니다.",
+            )*/
 
     @PostMapping("/login")
     fun signIn(
@@ -90,13 +103,12 @@ class UserController(
     @PostMapping("/verify")
     fun verify(
         @RequestBody request: EmailVerificationRequest,
-    ): ResponseEntity<RsData<Unit>> {
-        val isValidCode = emailService.verifyCode(request.email, request.code)
-
-        return if (isValidCode) {
-            ResponseEntity.ok(RsData("200", "이메일 인증이 처리되었습니다."))
-        } else {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(RsData("400", "인증코드가 일치하지 않습니다."))
+    ): ResponseEntity<RsData<Unit>> =
+        when (emailService.verifyCode(request.email, request.code)) {
+            true -> ResponseEntity.ok(RsData("200", "이메일 인증이 처리되었습니다."))
+            false ->
+                ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(RsData("400", "인증코드가 일치하지 않습니다."))
         }
-    }
 }
