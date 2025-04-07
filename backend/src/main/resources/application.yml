@@ -15,25 +15,25 @@ spring:
     serialization:
       fail-on-empty-beans: false
 
-  #  datasource:
-  #    url: jdbc:mysql://localhost/awsTestDb?useSSL=false&allowPublicKeyRetrieval=true
-  #    username: root
-  #    password: pk2258
-  #    driver-class-name: com.mysql.cj.jdbc.Driver
-  #    hikari:
-  #      auto-commit: false
+  # MySQL 연결 정보 (현재 주석 처리됨)
+  # datasource:
+  #   url: jdbc:mysql://localhost/awsTestDb?useSSL=false&allowPublicKeyRetrieval=true
+  #   username: root
+  #   password: pk2258
+  #   driver-class-name: com.mysql.cj.jdbc.Driver
+  #   hikari:
+  #     auto-commit: false
 
   datasource:
-#    url: jdbc:h2:file:./db;MODE=MySQL;INIT=RUNSCRIPT FROM 'classpath:schema.sql' \; RUNSCRIPT FROM 'classpath:data.sql'
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:./db_dev;MODE=MySQL  # ✅ INIT 제거됨
     driverClassName: org.h2.Driver
     username: sa
     password:
 
   jpa:
-    defer-datasource-initialization: true
+    defer-datasource-initialization: true  # ✅ JPA 먼저 실행되고 data.sql 그다음 실행
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop                      # ✅ 테이블 자동 생성
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
@@ -41,6 +41,11 @@ spring:
         show-sql: false
         format_sql: true
     database-platform: org.hibernate.dialect.H2Dialect
+
+  sql:
+    init:
+      mode: always  # ✅ schema.sql과 data.sql 항상 실행되도록 설정
+      continue-on-error: true
 
   h2:
     console:
@@ -51,19 +56,18 @@ spring:
         trace: true
 
   mail:
-    host: smtp.gmail.com # Gmail SMTP 서버 호스트
-    port: 465 # Gmail SMTP 포트 (SSL을 사용할 경우 465)
+    host: smtp.gmail.com
+    port: 587
     username: bid.system.info@gmail.com # 이메일 발송에 사용할 Gmail 주소
-    password: tskqfpdczojlwfbh # 구글 앱 비밀번호 (2단계 인증 시 필요)
+    password: tskqfpdczojlwfbh # 구글 앱 비밀번호 (2단계 인증시 필요)
     protocol: smtps # 이메일 전송에 사용할 프로토콜 (smtps는 SSL 보안 사용)
-
     properties:
       mail:
         smtp:
-          auth: true # SMTP 서버 인증 사용 여부 (true로 설정)
-          timeout: 20000 # SMTP 서버와의 통신 시 대기 시간 (20초, 밀리초 단위)
-          connectiontimeout: 20000 # SMTP 서버와의 연결 시도 시간 (20초, 밀리초 단위)
-          writetimeout: 20000 # SMTP 서버로 데이터 전송 시 대기 시간 (20초, 밀리초 단위)
+          auth: true
+          timeout: 5000
+          connectiontimeout: 5000
+          writetimeout: 5000
           starttls:
             enable: true
 
