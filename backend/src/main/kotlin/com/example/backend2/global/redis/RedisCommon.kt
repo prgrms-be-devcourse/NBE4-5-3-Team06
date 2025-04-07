@@ -112,4 +112,30 @@ class RedisCommon(
         val seconds = template.getExpire(key, TimeUnit.SECONDS)
         return if (seconds == null || seconds < 0) null else LocalDateTime.now().plusSeconds(seconds)
     }
+
+    fun <T> executeInTransaction(operation: () -> T): T {
+        return template.execute { connection ->
+            try {
+                connection.multi()
+                val result = operation()
+                connection.exec()
+                result
+            } catch (e: Exception) {
+                connection.discard()
+                throw e
+            }
+        } ?: throw IllegalStateException("Redis transaction failed")
+    }
+
+    fun <T> putInHashAtomically(key: String, field: String, value: T, condition: (T?) -> Boolean): Boolean {
+        return executeInTransaction {
+            val currentValue = getFromHash(key, field, value!!::class.java)
+            if (condition(currentValue)) {
+                putInHash(key, field, value)
+                true
+            } else {
+                false
+            }
+        }
+    }
 }

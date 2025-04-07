@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -49,6 +50,7 @@ class WinnerIntegrationTest {
 
     @Test
     @DisplayName("낙찰 내역 조회 테스트") // 종료된 경매 -> 낙찰 내역 조회
+    @WithMockUser(username = "testUser-UUID", roles = ["USER"])
     fun winnerList() {
         // 낙찰자 생성
         val user =
@@ -93,7 +95,7 @@ class WinnerIntegrationTest {
             ),
         )
 
-        val url = "/api/winner/${user.userUUID}/winner"
+        val url = "/api/auctions/${user.userUUID}/winner"
 
         // MockMvc를 통해 GET 요청을 실제로 수행
         val result =
@@ -107,9 +109,11 @@ class WinnerIntegrationTest {
             .andExpect(status().isOk) // HTTP 상태 코드가 200 인지 확인
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.code").value("200")) // 기대값(200)과 같은지 확인
-            .andExpect(jsonPath("$.message").value("낙찰 내역 조회가 완료되었습니다.")) // 기대값("낙찰 내역 조회가 완료되었습니다)와 같은지 확인
+            .andExpect(jsonPath("$.msg").value("낙찰 내역 조회가 완료되었습니다.")) // 기대값("낙찰 내역 조회가 완료되었습니다)와 같은지 확인
             .andExpect(jsonPath("$.data").isArray)
-            .andExpect(jsonPath("$.data[0].nickname").value("test1")) // 기대값과 같은지 확인 ("teset1")
-            .andExpect(jsonPath("$.data[0].winingBid").value(2000)) // 기대값과 같은지 확인 (2000)
+            .andExpect(jsonPath("$.data[0].productName").value("MacBook Pro")) // 상품명 확인
+            .andExpect(jsonPath("$.data[0].description").value("애플 노트북")) // 상품 설명 확인
+            .andExpect(jsonPath("$.data[0].winningBid").value(2000)) // 낙찰가 확인
+            .andExpect(jsonPath("$.data[0].imageUrl").value("")) // 이미지 URL 확인
     }
 }

@@ -64,8 +64,8 @@ class BidRepositoryTest {
 
         // then
         assertThat(savedBid.bidId).isNotNull
-        assertThat(savedBid.auction.product.productName).isEqualTo("테스트 상품")
-        assertThat(savedBid.user.userUUID).isEqualTo("test-uuid")
+        assertThat(savedBid.auction?.product?.productName).isEqualTo("테스트 상품")
+        assertThat(savedBid.user?.userUUID).isEqualTo("test-uuid")
         assertThat(savedBid.amount).isEqualTo(1500)
     }
-} 
+}

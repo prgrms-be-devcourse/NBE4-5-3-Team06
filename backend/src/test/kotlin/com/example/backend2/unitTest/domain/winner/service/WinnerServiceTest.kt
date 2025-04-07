@@ -77,8 +77,8 @@ class WinnerServiceTest {
 
         // then
         assertThat(response).isNotNull
-        assertThat(response!!.statusCode).isEqualTo("200")
-        assertThat(response.message).isEqualTo("낙찰 내역 조회가 완료되었습니다.")
+        assertThat(response.code).isEqualTo("200")
+        assertThat(response.msg).isEqualTo("낙찰 내역 조회가 완료되었습니다.")
 
         val winners = response.data
         assertThat(winners).isNotNull
@@ -105,4 +105,4 @@ class WinnerServiceTest {
 
         assertThat(exception.message).isEqualTo("낙찰자가 존재하지 않습니다.")
     }
-} 
+}
