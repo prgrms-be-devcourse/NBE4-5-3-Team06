@@ -69,11 +69,21 @@ class UserService(
 
     fun login(request: UserSignInRequest): UserSignInResponse {
         // 이메일을 기준으로 사용자를 찾음 (존재하지 않으면 예외 발생)
-        val user =
-            userRepository
-                .findByEmail(request.email)
-                .orElseThrow { ServiceException(HttpStatus.UNAUTHORIZED.value().toString(), "이메일 또는 비밀번호가 일치하지 않습니다.") }
+        val user = userRepository
+            .findByEmail(request.email)
+            .orElseThrow {
+                ServiceException(
+                    HttpStatus.UNAUTHORIZED.value().toString(),
+                    "이메일 또는 비밀번호가 일치하지 않습니다."
+                )
+            }
 
+        if (!passwordEncoder.matches(request.password, user.password)) {
+            throw ServiceException(
+                HttpStatus.UNAUTHORIZED.value().toString(),
+                "이메일 또는 비밀번호가 일치하지 않습니다."
+            )
+        }
         // JWT 토큰 발행 시 포함할 사용자 정보 설정
         val claims = hashMapOf<String, Any>()
         claims["userUUID"] = user.userUUID
