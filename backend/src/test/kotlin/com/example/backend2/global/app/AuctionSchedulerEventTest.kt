@@ -14,10 +14,11 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 import java.util.*
 
-
+@ActiveProfiles("test")
 class AuctionSchedulerEventTest {
     private lateinit var redisTemplate: RedisTemplate<String, String>
     private lateinit var auctionRepository: AuctionRepository
