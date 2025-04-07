@@ -20,7 +20,7 @@ data class User(
     var nickname: String,
     @Column(name = "PASSWORD", nullable = false)
     val password: String,
-    @Column(name = "profileImage", columnDefinition = "TEXT")
+    @Column(name = "PROFILE_IMAGE", columnDefinition = "TEXT")
     var profileImage: String? = null,
     @Column(name = "CREATED_DATE")
     val createdDate: LocalDateTime = LocalDateTime.now(),
