@@ -57,17 +57,17 @@ spring:
 
   mail:
     host: smtp.gmail.com
-    port: 465
-    username: bid.system.info@gmail.com
-    password: tskqfpdczojlwfbh
-    protocol: smtps
+    port: 587
+    username: bid.system.info@gmail.com # 이메일 발송에 사용할 Gmail 주소
+    password: tskqfpdczojlwfbh # 구글 앱 비밀번호 (2단계 인증시 필요)
+    protocol: smtps # 이메일 전송에 사용할 프로토콜 (smtps는 SSL 보안 사용)
     properties:
       mail:
         smtp:
           auth: true
-          timeout: 20000
-          connectiontimeout: 20000
-          writetimeout: 20000
+          timeout: 5000
+          connectiontimeout: 5000
+          writetimeout: 5000
           starttls:
             enable: true
 
