@@ -63,7 +63,6 @@ class EmailService(
 
             helper.setText(text, true) // HTML 이메일 전송 설정
             mainSender.send(message)
-            log.error { "Send verification code failed: {}" }
         } catch (e: Exception) {
             throw ServiceException(HttpStatus.INTERNAL_SERVER_ERROR.value().toString(), "이메일 전송 중 오류가 발생했습니다.")
         }
