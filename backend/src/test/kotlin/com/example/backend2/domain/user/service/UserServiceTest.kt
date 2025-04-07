@@ -18,12 +18,14 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.test.context.ActiveProfiles
 import java.util.*
 
 /**
  * 사용자 서비스의 단위 테스트 클래스
  * 회원가입, 로그인, 사용자 정보 수정 등의 기능을 테스트
  */
+@ActiveProfiles("test")
 @DisplayName("UserService 단위 테스트")
 class UserServiceTest {
     private lateinit var userService: UserService
@@ -123,6 +125,7 @@ class UserServiceTest {
         )
 
         every { userRepository.findByEmail(any()) } returns Optional.of(user)
+        every { passwordEncoder.matches("password", "encodedPassword") } returns true
         every { jwtProvider.generateToken(any(), any()) } returns "test-token"
 
         // when
@@ -183,7 +186,8 @@ class UserServiceTest {
             nickname = "tester",
             role = Role.USER
         )
-        userRepository.save(user)
+        // Mock 설정: UUID로 조회 시 해당 유저 반환
+        every { userRepository.findByUserUUID("user-123") } returns Optional.of(user)
 
         // When
         val result = userService.getUserCheck(user.userUUID)
@@ -191,6 +195,10 @@ class UserServiceTest {
         // UserCheckRequest 객체에서 email,nickname값이 저장한 User 객체의 값과 일치하는지 확인
         assertEquals("test@example.com", result.email)
         assertEquals("tester", result.nickname)
+
+        println("사용자 조회 성공")
+        println("email: ${result.email}")
+        println("nickname: ${result.nickname}")
     }
 
     @Test
@@ -199,6 +207,9 @@ class UserServiceTest {
         //존재 하지 않는 userUUId 설정
         val userUUID ="No-exist-userUUID"
 
+        // MockK 설정: 해당 UUID로 유저 없다고 응답
+        every { userRepository.findByUserUUID(userUUID) } returns Optional.empty()
+
         //예외 발생을 감지
         val exception =assertThrows<ServiceException> {
             userService.getUserCheck(userUUID)
@@ -206,6 +217,10 @@ class UserServiceTest {
         // code,message가 예상한 결과 인지 확인
         assertEquals("400", exception.code)
         assertEquals("사용자가 존재하지 않습니다.", exception.message)
+
+        // 디버깅 출력
+        println("유저 없음 예외 발생 성공")
+        println("code=${exception.code}, message=${exception.message}")
 
     }
     @Test
@@ -221,7 +236,6 @@ class UserServiceTest {
             profileImage = "test.jpg",
             role = Role.USER
         )
-        userRepository.save(user)
 
         //  수정하고자 하는 값을 담은 DTO
         val request = UserPutRequest(
@@ -230,15 +244,31 @@ class UserServiceTest {
             profileImage = "new_test.jpg"
         )
 
+        // 수정된 결과로 반환할 객체
+        val updatedUser = user.copy(
+            email = request.email ?: user.email,
+            nickname = request.nickname ?: user.nickname,
+            profileImage = request.profileImage ?: user.profileImage
+        )
+
+        // Mock 설정
+        every { userRepository.findByUserUUID(userUUID) } returns Optional.of(user)
+        every { userRepository.save(any()) } returns updatedUser
+
         val result = userService.updateUser(userUUID, request)
 
         assertEquals("test2@example.com", result.email)
         assertEquals("tester2", result.nickname)
         assertEquals("new_test.jpg", result.profileImage)
+
+        println("수정된 유저 정보:")
+        println("email: ${result.email}")
+        println("nickname: ${result.nickname}")
+        println("profileImage: ${result.profileImage}")
     }
 
     @Test
-    @DisplayName("사용자 정보 조회 실패 - 사용자 정보를 찾을 수 없음")
+    @DisplayName("사용자 정보 조회 실패 - 사용자 정보를 찾을 수 없음 (수정)")
     fun updateUserFail(){
         val userUUID = "No-exist-userUUID"
 
@@ -248,6 +278,10 @@ class UserServiceTest {
             nickname = "test2",
             profileImage = "new_test.jpg"
         )
+
+        // Mock 설정 추가: 해당 UUID의 유저가 존재하지 않음
+        every { userRepository.findByUserUUID(userUUID) } returns Optional.empty()
+
         //예외 발생
         val exception =assertThrows<ServiceException> {
             userService.updateUser(userUUID, request)
@@ -255,5 +289,9 @@ class UserServiceTest {
         //기대한 값과 같은지 확인하는 코드
         assertEquals("404", exception.code)
         assertEquals("사용자 정보를 찾을 수 없습니다.", exception.message)
+
+        // 디버깅 출력
+        println("유저 수정 실패 예외 발생 확인")
+        println("code=${exception.code}, message=${exception.message}")
     }
 } 
