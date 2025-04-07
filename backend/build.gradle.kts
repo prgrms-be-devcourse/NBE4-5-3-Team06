@@ -28,7 +28,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.projectlombok:lombok")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("com.google.code.gson:gson:2.10.1")
@@ -39,6 +38,11 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     runtimeOnly("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    testImplementation("io.mockk:mockk:1.13.9")
+
+    // 데이터베이스
+    runtimeOnly("com.h2database:h2")
 }
 
 kotlin {
