@@ -15,9 +15,9 @@ import java.util.*
 // 경매 종료 -> 종료 상태 변경 및 이벤트 발행
 @Service
 class AuctionSchedulerEvent(
-    private val redisTemplate: RedisTemplate<String, String>? = null,
-    private val auctionRepository: AuctionRepository? = null,
-    private val eventPublisher: ApplicationEventPublisher? = null,
+    private val redisTemplate: RedisTemplate<String, String>,
+    private val auctionRepository: AuctionRepository,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
     private val log = KotlinLogging.logger {}
 

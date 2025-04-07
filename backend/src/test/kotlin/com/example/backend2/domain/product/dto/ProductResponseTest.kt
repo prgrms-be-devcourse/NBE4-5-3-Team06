@@ -4,7 +4,9 @@ import com.example.backend2.domain.product.entity.Product
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat
+import org.springframework.test.context.ActiveProfiles
 
+@ActiveProfiles("test")
 @DisplayName("ProductResponse DTO 단위 테스트")
 class ProductResponseTest {
 

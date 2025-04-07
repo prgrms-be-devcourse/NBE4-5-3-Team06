@@ -5,12 +5,14 @@ import com.example.backend2.domain.user.entity.User
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat
+import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
 /**
  * 사용자 DTO의 단위 테스트 클래스
  * DTO 변환 및 응답 생성 기능을 테스트
  */
+@ActiveProfiles("test")
 @DisplayName("User DTO 단위 테스트")
 class UserDtoTest {
 

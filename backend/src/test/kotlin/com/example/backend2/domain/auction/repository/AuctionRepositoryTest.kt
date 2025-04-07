@@ -3,13 +3,14 @@ package com.example.backend2.domain.auction.repository
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.domain.auction.entity.Auction
 import com.example.backend2.domain.product.entity.Product
+import com.example.backend2.domain.product.repository.ProductRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
-import org.assertj.core.api.Assertions.assertThat
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -19,25 +20,30 @@ class AuctionRepositoryTest {
     @Autowired
     private lateinit var auctionRepository: AuctionRepository
 
+    @Autowired
+    private lateinit var productRepository: ProductRepository
+
     @Test
     @DisplayName("경매 목록 조회 테스트")
     fun `findAllAuctions should return all auctions with products`() {
         // given
-        val product = Product(
-            productName = "테스트 상품",
-            description = "테스트 설명"
-        )
-        
-        val auction = Auction(
-            product = product,
-            startPrice = 1000,
-            minBid = 100,
-            startTime = LocalDateTime.now(),
-            endTime = LocalDateTime.now().plusDays(1),
-            status = AuctionStatus.ONGOING
+        val product = productRepository.save(
+            Product(
+                productName = "테스트 상품",
+                description = "테스트 설명"
+            )
         )
 
-        auctionRepository.save(auction)
+        val auction = auctionRepository.save(
+            Auction(
+                product = product,
+                startPrice = 1000,
+                minBid = 100,
+                startTime = LocalDateTime.now(),
+                endTime = LocalDateTime.now().plusDays(1),
+                status = AuctionStatus.ONGOING
+            )
+        )
 
         // when
         val result = auctionRepository.findAllAuctions()
@@ -47,30 +53,38 @@ class AuctionRepositoryTest {
         assertThat(result[0].product.productName).isEqualTo("테스트 상품")
         assertThat(result[0].startPrice).isEqualTo(1000)
         assertThat(result[0].status).isEqualTo(AuctionStatus.ONGOING)
+
+        // 출력 확인
+        println("경매 목록 조회 테스트 결과")
+        println("상품명: ${auction.product.productName}")
+        println("시작가: ${auction.startPrice}")
+        println("상태: ${auction.status}")
     }
 
     @Test
     @DisplayName("경매 ID로 조회 테스트")
     fun `findByAuctionId should return auction when exists`() {
         // given
-        val product = Product(
-            productName = "테스트 상품",
-            description = "테스트 설명"
+        val product = productRepository.save(
+            Product(
+                productName = "테스트 상품",
+                description = "테스트 설명"
+            )
         )
         
-        val auction = Auction(
-            product = product,
-            startPrice = 1000,
-            minBid = 100,
-            startTime = LocalDateTime.now(),
-            endTime = LocalDateTime.now().plusDays(1),
-            status = AuctionStatus.ONGOING
+        val auction = auctionRepository.save(
+            Auction(
+                product = product,
+                startPrice = 1000,
+                minBid = 100,
+                startTime = LocalDateTime.now(),
+                endTime = LocalDateTime.now().plusDays(1),
+                status = AuctionStatus.ONGOING
+            )
         )
 
-        val savedAuction = auctionRepository.save(auction)
-
         // when
-        val result = auctionRepository.findByAuctionId(savedAuction.auctionId!!)
+        val result = auctionRepository.findByAuctionId(auction.auctionId!!)
 
         // then
         assertThat(result).isNotNull

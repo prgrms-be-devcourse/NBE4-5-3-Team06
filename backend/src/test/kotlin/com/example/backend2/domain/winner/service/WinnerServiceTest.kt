@@ -5,21 +5,20 @@ import com.example.backend2.data.Role
 import com.example.backend2.domain.auction.entity.Auction
 import com.example.backend2.domain.product.entity.Product
 import com.example.backend2.domain.user.entity.User
-import com.example.backend2.domain.winner.dto.WinnerCheckResponse
 import com.example.backend2.domain.winner.entity.Winner
 import com.example.backend2.domain.winner.repository.WinnerRepository
-import com.example.backend2.global.dto.RsData
 import com.example.backend2.global.exception.ServiceException
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
+@ActiveProfiles("test")
 @DisplayName("WinnerService 단위 테스트")
 class WinnerServiceTest {
     private lateinit var winnerService: WinnerService
@@ -75,8 +74,8 @@ class WinnerServiceTest {
 
         // then
         assertThat(response).isNotNull
-        assertThat(response!!.statusCode).isEqualTo("200")
-        assertThat(response.message).isEqualTo("낙찰 내역 조회가 완료되었습니다.")
+        assertThat(response.code).isEqualTo("200")
+        assertThat(response.msg).isEqualTo("낙찰 내역 조회가 완료되었습니다.")
         
         val winners = response.data
         assertThat(winners).isNotNull
