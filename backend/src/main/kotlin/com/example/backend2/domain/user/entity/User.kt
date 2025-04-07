@@ -13,13 +13,13 @@ import java.time.LocalDateTime
 data class User(
     @Id
     @Column(name = "USER_UUID", nullable = false, length = 50)
-    val userUUID: String,
+    val userUUID: String = "",
     @Column(name = "EMAIL", nullable = false, unique = true)
-    var email: String,
+    var email: String = "",
     @Column(name = "NICKNAME", nullable = false, unique = true)
-    var nickname: String,
+    var nickname: String = "",
     @Column(name = "PASSWORD", nullable = false)
-    val password: String,
+    val password: String = "",
     @Column(name = "PROFILE_IMAGE", columnDefinition = "TEXT")
     var profileImage: String? = null,
     @Column(name = "CREATED_DATE")
@@ -28,7 +28,7 @@ data class User(
     val modifiedAt: LocalDateTime = LocalDateTime.now(),
     @Enumerated(EnumType.STRING)
     @Column(name = "ROLE")
-    val role: Role,
+    val role: Role = Role.USER,
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL])
     val winners: List<Winner> = mutableListOf(),
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL])

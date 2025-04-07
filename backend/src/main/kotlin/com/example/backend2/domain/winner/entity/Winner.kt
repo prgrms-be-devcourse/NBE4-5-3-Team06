@@ -16,14 +16,28 @@ data class Winner(
     val winnerId: Long? = null,
     @ManyToOne
     @JoinColumn(name = "USER_UUID", nullable = false)
-    val user: User,
+    val user: User =
+        User(
+            userUUID = "",
+            email = "",
+            nickname = "",
+            password = "",
+            role = com.example.backend2.data.Role.USER,
+        ),
     @OneToOne
     @JoinColumn(name = "AUCTION_ID", nullable = false)
-    val auction: Auction,
+    val auction: Auction =
+        Auction(
+            product =
+                com.example.backend2.domain.product.entity
+                    .Product(),
+            startPrice = 0,
+            minBid = 0,
+        ),
     @Column(name = "WINNING_BID")
     val winningBid: Int? = 0,
     @Column(name = "WIN_TIME")
-    val winTime: LocalDateTime,
+    val winTime: LocalDateTime = LocalDateTime.now(),
 ) {
     companion object {
         fun createWinner(

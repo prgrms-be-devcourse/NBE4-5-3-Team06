@@ -19,7 +19,11 @@ data class Auction(
     val auctionId: Long? = null,
     @OneToOne
     @JoinColumn(name = "PRODUCT_ID", nullable = false)
-    val product: Product? = null,
+    val product: Product = Product(
+        productName = "",
+        imageUrl = null,
+        description = null
+    ),
     @Column(name = "START_PRICE")
     val startPrice: Int = 0,
     @Column(name = "MIN_BID")
