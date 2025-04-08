@@ -28,7 +28,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.projectlombok:lombok")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("com.google.code.gson:gson:2.10.1")
@@ -37,6 +36,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.mockito:mockito-core:5.11.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
     runtimeOnly("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
@@ -51,4 +52,11 @@ kotlin {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+
+    // Configure Mockito agent to address the dynamic agent loading warning
+    jvmArgs =
+        listOf(
+            "-javaagent:${configurations.testRuntimeClasspath.get().find { it.name.contains("byte-buddy-agent") }?.absolutePath}",
+            "-Dmockito.inline.extended=true",
+        )
 }

@@ -54,25 +54,47 @@ class BidService(
             throw ServiceException(HttpStatus.BAD_REQUEST.value().toString(), "이미 최고 입찰자입니다. 다른 사용자의 입찰을 기다려주세요.")
         }
 
-        // 최소 입찰 단위 검증
-        if (request.amount <= currentBidAmount) {
-            throw ServiceException(HttpStatus.BAD_REQUEST.value().toString(), "입찰 금액이 현재 최고가보다 낮습니다.")
+        // Redis 에 입찰 정보를 원자적으로 갱신
+        val bidSuccess =
+            /**
+             A 사용자의 트랜잭션 / B 사용자의 트랜잭션이 병렬처리되는 것이 아니라,
+             큐에 순서대로 적재되어 차례로 처리된다.
+             */
+            redisCommon.executeInTransaction {
+                val currentAmount = redisCommon.getFromHash(hashKey, "amount", Int::class.java) ?: auction.startPrice
+                val currentUserUUID = redisCommon.getFromHash(hashKey, "userUUID", String::class.java)
+
+                // 입찰 금액 검증
+                if (request.amount <= currentAmount) {
+                    throw ServiceException(HttpStatus.BAD_REQUEST.value().toString(), "입찰 금액이 현재 최고가보다 낮습니다.")
+                }
+                // 최소 입찰 단위 검증
+                if (request.amount < (currentAmount + auction.minBid)) {
+                    throw ServiceException(
+                        HttpStatus.BAD_REQUEST.value().toString(),
+                        "입찰 금액이 최소 입찰 단위보다 작습니다. 최소 ${currentAmount + auction.minBid}원 이상 입찰해야 합니다.",
+                    )
+                }
+
+                // 동시성 제어를 위한 조건 검사
+                if (request.amount > currentAmount && userUUID != currentUserUUID) {
+                    // Redis에 입찰 정보를 원자적으로 업데이트
+                    redisCommon.putInHash(hashKey, "amount", request.amount)
+                    redisCommon.putInHash(hashKey, "userUUID", userUUID)
+                    true
+                } else {
+                    false
+                }
+            }
+
+        if (!bidSuccess) {
+            throw ServiceException(HttpStatus.BAD_REQUEST.value().toString(), "입찰에 실패했습니다. 다른 사용자의 입찰을 기다려주세요.")
         }
-        if (request.amount < (currentBidAmount + auction.minBid)) {
-            throw ServiceException(
-                HttpStatus.BAD_REQUEST.value().toString(),
-                "입찰 금액이 최소 입찰 단위보다 작습니다. 최소 ${currentBidAmount + auction.minBid}원 이상 입찰해야 합니다.",
-            )
-        }
 
-        // Redis에 입찰 정보 갱신
-        redisCommon.putInHash(hashKey, "amount", request.amount)
-        redisCommon.putInHash(hashKey, "userUUID", userUUID)
+        // 입찰 정보 저장
+        val bid = Bid.createBid(auction, user, request.amount, now)
+        val savedBid = bidRepository.save(bid)
 
-        // DB 저장 (낙찰용 로그로 남김)
-        val bid = Bid.createBid(auction, user, request.amount, java.time.LocalDateTime.now())
-        bidRepository.save(bid)
-
-        return BidCreateResponse.from(bid)
+        return BidCreateResponse.from(savedBid)
     }
 }
