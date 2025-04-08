@@ -180,13 +180,13 @@ class JwtProviderTest {
         
         // 만료된 토큰을 생성하기 위해 JwtProvider 클래스를 수정하여 만료 시간을 과거로 설정
         val tempJwtProvider = JwtProvider()
-        val secretKey = java.lang.reflect.Field::class.java.getDeclaredField("secretKey").apply {
-            isAccessible = true
-        }.get(tempJwtProvider) as javax.crypto.SecretKey
+        val secretKeyField = JwtProvider::class.java.getDeclaredField("secretKey")
+        secretKeyField.isAccessible = true
+        val secretKey = secretKeyField.get(tempJwtProvider) as javax.crypto.SecretKey
         
-        val expirationTime = java.lang.reflect.Field::class.java.getDeclaredField("EXPIRATION_TIME").apply {
-            isAccessible = true
-        }.get(tempJwtProvider) as Long
+        val expirationTimeField = JwtProvider::class.java.getDeclaredField("EXPIRATION_TIME")
+        expirationTimeField.isAccessible = true
+        val expirationTime = expirationTimeField.get(null) as Long
         
         val expiredToken = io.jsonwebtoken.Jwts.builder()
             .setClaims(claims)
