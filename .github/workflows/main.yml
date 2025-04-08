@@ -1,0 +1,65 @@
+name: 백엔드 CI 테스트 코드 자동화  # 워크플로우 이름 설정
+
+on:
+  push:
+    branches:
+      - main  # main 브랜치에 푸시가 있을 때
+      - release/*  # release/로 시작하는 브랜치에 푸시가 있을 때
+      - develop  # develop 브랜치에 푸시가 있을 때
+    paths: 'backend/**'  # backend 폴더 내 파일이 변경될 때만 실행
+  pull_request:
+    branches:
+      - main  # main 브랜치로 PR이 있을 때
+      - release/*  # release/로 시작하는 브랜치로 PR이 있을 때
+      - develop  # develop 브랜치로 PR이 있을 때
+    paths: 'backend/**'  # backend 폴더 내 파일이 변경될 때만 실행
+
+defaults:
+  run:
+    working-directory: backend  # 실행할 작업 디렉토리를 backend로 설정
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # 최신 Ubuntu 환경에서 실행
+
+    steps:
+      - name: 리포지토리를 가져옵니다
+        uses: actions/checkout@v3  # GitHub 리포지토리를 체크아웃하는 액션
+        # with:
+        #   token: ${{ secrets.SUBMODULE_TOKEN }}  # 서브모듈 접근을 위한 토큰을 설정
+        #   submodules: recursive  # 서브모듈을 재귀적으로 가져옴
+
+      - name: JDK 21을 설치합니다
+        uses: actions/setup-java@v3  # JDK 21을 설정하는 액션
+        with:
+          java-version: '21'  # JDK 21 버전을 설정
+          distribution: 'temurin'  # AdoptOpenJDK Temurin 배포판 사용
+
+      - name: Gradle 명령 실행을 위한 권한을 부여합니다
+        run: chmod +x gradlew  # Gradle 실행 파일(graderw)에 실행 권한을 부여
+
+      - name: Gradle build를 수행합니다
+        run: ./gradlew build  # Gradle을 이용해 빌드를 수행
+
+      - name: 테스트 결과를 PR에 코멘트로 등록합니다
+        uses: EnricoMi/publish-unit-test-result-action@v1  # 테스트 결과를 PR에 코멘트로 등록하는 액션
+        if: always()  # 항상 실행하도록 설정 (성공 여부에 관계없이)
+        with:
+          files: '**/build/test-results/test/TEST-*.xml'  # 테스트 결과 파일 경로를 지정
+
+      - name: 테스트 실패 시, 실패한 코드 라인에 Check 코멘트를 등록합니다
+        uses: mikepenz/action-junit-report@v3  # 테스트 실패 시, 실패한 코드 라인에 체크 코멘트를 등록하는 액션
+        if: always()  # 항상 실행하도록 설정 (성공 여부에 관계없이)
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'  # 테스트 결과 파일 경로
+          token: ${{ github.token }}  # GitHub 인증 토큰을 사용하여 API 호출
+
+      - name: build 실패 시 Slack으로 알립니다
+        uses: 8398a7/action-slack@v3  # 빌드 실패 시 Slack으로 알림을 보내는 액션
+        with:
+          status: ${{ job.status }}  # 현재 작업의 상태를 Slack 메시지로 보냄
+          author_name: 백엔드 빌드 실패 알림  # Slack 메시지의 작성자 이름
+          fields: repo, message, commit, author, action, eventName, ref, workflow, job, took  # Slack 메시지에 포함될 필드들
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}  # Slack 웹훅 URL을 비밀값으로 설정
+        if: always()  # 빌드 실패 시에만 Slack 알림을 보냄
