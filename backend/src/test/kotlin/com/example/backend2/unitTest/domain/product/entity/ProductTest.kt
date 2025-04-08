@@ -1,7 +1,8 @@
-package com.example.backend2.domain.product.entity
+package com.example.backend2.unitTest.domain.product.entity
 
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.domain.auction.entity.Auction
+import com.example.backend2.domain.product.entity.Product
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat

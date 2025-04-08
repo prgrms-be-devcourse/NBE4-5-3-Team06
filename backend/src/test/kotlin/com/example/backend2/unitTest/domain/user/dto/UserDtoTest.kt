@@ -1,6 +1,10 @@
-package com.example.backend2.domain.user.dto
+package com.example.backend2.unitTest.domain.user.dto
 
 import com.example.backend2.data.Role
+import com.example.backend2.domain.user.dto.UserCheckRequest
+import com.example.backend2.domain.user.dto.UserPutRequest
+import com.example.backend2.domain.user.dto.UserSignInResponse
+import com.example.backend2.domain.user.dto.UserSignUpResponse
 import com.example.backend2.domain.user.entity.User
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test

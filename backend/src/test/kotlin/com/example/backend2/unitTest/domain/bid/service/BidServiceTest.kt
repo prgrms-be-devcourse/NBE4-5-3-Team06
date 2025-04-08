@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:no-wildcard-imports")
 
-package com.example.backend2.domain.bid.service
+package com.example.backend2.unitTest.domain.bid.service
 
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.data.Role
@@ -9,6 +9,7 @@ import com.example.backend2.domain.auction.entity.Auction
 import com.example.backend2.domain.auction.service.AuctionService
 import com.example.backend2.domain.bid.entity.Bid
 import com.example.backend2.domain.bid.repository.BidRepository
+import com.example.backend2.domain.bid.service.BidService
 import com.example.backend2.domain.product.entity.Product
 import com.example.backend2.domain.user.entity.User
 import com.example.backend2.domain.user.service.UserService
@@ -93,6 +94,12 @@ class BidServiceTest {
                 amount = 1500,
                 bidTime = LocalDateTime.now(),
             )
+
+        // 핵심 Mock - executeInTransaction (Boolean 타입 명시)
+        every { redisCommon.executeInTransaction<Boolean>(any()) } answers {
+            val block = firstArg<() -> Boolean>()
+            block()
+        }
 
         // when
         val result = bidService.createBid(1L, request)
@@ -219,6 +226,12 @@ class BidServiceTest {
                 amount = 1050, // 현재가(1000) + 최소입찰단위(100)보다 작음
                 token = "test-token",
             )
+
+        // 필수 Mock 추가!
+        every { redisCommon.executeInTransaction<Boolean>(any()) } answers {
+            val block = firstArg<() -> Boolean>()
+            block()
+        }
 
         every { jwtProvider.parseUserUUID(request.token) } returns "test-uuid"
         every { userService.getUserByUUID("test-uuid") } returns user

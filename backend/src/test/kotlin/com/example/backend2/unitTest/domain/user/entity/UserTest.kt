@@ -1,11 +1,11 @@
-package com.example.backend2.domain.user.entity
+package com.example.backend2.unitTest.domain.user.entity
 
 import com.example.backend2.data.Role
+import com.example.backend2.domain.user.entity.User
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.assertj.core.api.Assertions.assertThat
 import org.springframework.test.context.ActiveProfiles
-import java.time.LocalDateTime
 
 /**
  * 사용자 엔티티의 단위 테스트 클래스

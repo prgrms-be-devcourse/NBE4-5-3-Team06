@@ -1,7 +1,8 @@
-package com.example.backend2.domain.auction.repository
+package com.example.backend2.unitTest.domain.auction.repository
 
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.domain.auction.entity.Auction
+import com.example.backend2.domain.auction.repository.AuctionRepository
 import com.example.backend2.domain.product.entity.Product
 import com.example.backend2.domain.product.repository.ProductRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -10,10 +11,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.jdbc.Sql
 import java.time.LocalDateTime
 
 @DataJpaTest
 @ActiveProfiles("test")
+@Sql(statements = ["DELETE FROM BID_TABLE", "DELETE FROM WINNER_TABLE", "DELETE FROM AUCTION_TABLE", "DELETE FROM PRODUCT_TABLE", "DELETE FROM USER_TABLE"], executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @DisplayName("AuctionRepository 단위 테스트")
 class AuctionRepositoryTest {
 
