@@ -22,12 +22,16 @@ jobs:
   build:
     runs-on: ubuntu-latest  # 최신 Ubuntu 환경에서 실행
 
+    services:
+      redis:
+        image: redis:latest  # Redis Docker 이미지 사용
+        ports:
+          - 6379:6379  # Redis 포트 매핑
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3  # Redis의 상태를 확인하는 옵션
+
     steps:
       - name: 리포지토리를 가져옵니다
         uses: actions/checkout@v3  # GitHub 리포지토리를 체크아웃하는 액션
-        # with:
-        #   token: ${{ secrets.SUBMODULE_TOKEN }}  # 서브모듈 접근을 위한 토큰을 설정
-        #   submodules: recursive  # 서브모듈을 재귀적으로 가져옴
 
       - name: JDK 21을 설치합니다
         uses: actions/setup-java@v3  # JDK 21을 설정하는 액션
