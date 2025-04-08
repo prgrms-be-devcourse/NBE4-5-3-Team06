@@ -56,14 +56,19 @@ class BidService(
 
         // Redis 에 입찰 정보를 원자적으로 갱신
         val bidSuccess =
+            /**
+             A 사용자의 트랜잭션 / B 사용자의 트랜잭션이 병렬처리되는 것이 아니라,
+             큐에 순서대로 적재되어 차례로 처리된다.
+             */
             redisCommon.executeInTransaction {
                 val currentAmount = redisCommon.getFromHash(hashKey, "amount", Int::class.java) ?: auction.startPrice
                 val currentUserUUID = redisCommon.getFromHash(hashKey, "userUUID", String::class.java)
 
-                // 최소 입찰 단위 검증
+                // 입찰 금액 검증
                 if (request.amount <= currentAmount) {
                     throw ServiceException(HttpStatus.BAD_REQUEST.value().toString(), "입찰 금액이 현재 최고가보다 낮습니다.")
                 }
+                // 최소 입찰 단위 검증
                 if (request.amount < (currentAmount + auction.minBid)) {
                     throw ServiceException(
                         HttpStatus.BAD_REQUEST.value().toString(),
