@@ -76,8 +76,8 @@ class AuctionIntegrationTest {
             AuctionRequest(
                 startPrice = 1_000_000,
                 minBid = 5000,
-                startTime = LocalDateTime.of(2025, 4, 10, 11, 30),
-                endTime = LocalDateTime.of(2025, 4, 14, 11, 30),
+                startTime = LocalDateTime.now().plusDays(3),
+                endTime = LocalDateTime.now().plusDays(7),
                 productName = "productDetailTest",
                 imageUrl = "example.com/image123.jpg",
                 description = "디테일 테스트",
