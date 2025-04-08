@@ -7,6 +7,21 @@ spring:
       host: localhost
       port: 6379
       password: "pk2258"
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 1020400461719-d8lih3vu1hr3su1qaipo36ebov4d8054.apps.googleusercontent.com
+            client-secret: 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
+            scope: openid, profile, email
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
+            user-name-attribute: sub
 
   profiles:
     active: dev
@@ -73,3 +88,5 @@ spring:
 
 springdoc:
   default-produces-media-type: application/json;charset=UTF-8
+
+
