@@ -7,6 +7,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -30,22 +31,24 @@ class EmailService(
         redisCommon.putInHash(hashKey, "code", verificationCode)
         redisCommon.setExpireAt(hashKey, LocalDateTime.now().plusSeconds(VERIFICATION_CODE_EXPIRATION.toLong()))
 
+        // ✅ 비동기로 이메일 전송
+        sendVerificationEmailAsync(email, verificationCode)
+    }
+
+    @Async
+    fun sendVerificationEmailAsync(email: String, code: String) {
         try {
             val message = mainSender.createMimeMessage()
             val helper = MimeMessageHelper(message, true, "UTF-8")
 
             helper.setTo(email)
             helper.setSubject("Verification Code")
-            helper.setText(buildVerificationEmailHtml(verificationCode), true)
+            helper.setText(buildVerificationEmailHtml(code), true)
 
             mainSender.send(message)
             log.info { "Verification code sent to $email" }
         } catch (e: Exception) {
             log.error(e) { "Failed to send verification email to $email" }
-            throw ServiceException(
-                HttpStatus.INTERNAL_SERVER_ERROR.value().toString(),
-                "이메일 전송 중 오류가 발생했습니다."
-            )
         }
     }
 
