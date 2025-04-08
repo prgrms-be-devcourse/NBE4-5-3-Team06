@@ -1,10 +1,11 @@
-package com.example.backend2.domain.product.entity
+package com.example.backend2.unitTest.domain.product.entity
 
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.domain.auction.entity.Auction
+import com.example.backend2.domain.product.entity.Product
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.assertj.core.api.Assertions.assertThat
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
@@ -15,7 +16,6 @@ import java.time.LocalDateTime
 @ActiveProfiles("test")
 @DisplayName("Product 엔티티 단위 테스트")
 class ProductTest {
-
     /**
      * 상품 생성 테스트
      * 새로운 상품이 올바른 속성값으로 생성되는지 확인
@@ -29,11 +29,12 @@ class ProductTest {
         val description = "테스트 상품 설명"
 
         // when
-        val product = Product(
-            productName = productName,
-            imageUrl = imageUrl,
-            description = description
-        )
+        val product =
+            Product(
+                productName = productName,
+                imageUrl = imageUrl,
+                description = description,
+            )
 
         // then
         assertThat(product.productId).isNull()
@@ -51,19 +52,21 @@ class ProductTest {
     @DisplayName("상품에 경매 연결 테스트")
     fun `product should be linked with auction`() {
         // given
-        val product = Product(
-            productName = "테스트 상품",
-            description = "테스트 설명"
-        )
+        val product =
+            Product(
+                productName = "테스트 상품",
+                description = "테스트 설명",
+            )
 
-        val auction = Auction(
-            product = product,
-            startPrice = 1000,
-            minBid = 100,
-            startTime = LocalDateTime.now(),
-            endTime = LocalDateTime.now().plusDays(1),
-            status = AuctionStatus.ONGOING
-        )
+        val auction =
+            Auction(
+                product = product,
+                startPrice = 1000,
+                minBid = 100,
+                startTime = LocalDateTime.now(),
+                endTime = LocalDateTime.now().plusDays(1),
+                status = AuctionStatus.ONGOING,
+            )
 
         // when
         val updatedProduct = product.copy(auction = auction)

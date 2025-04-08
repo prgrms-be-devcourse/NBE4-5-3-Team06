@@ -1,4 +1,4 @@
-package com.example.backend2.domain.winner.service
+package com.example.backend2.unitTest.domain.winner.service
 
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.data.Role
@@ -7,6 +7,7 @@ import com.example.backend2.domain.product.entity.Product
 import com.example.backend2.domain.user.entity.User
 import com.example.backend2.domain.winner.entity.Winner
 import com.example.backend2.domain.winner.repository.WinnerRepository
+import com.example.backend2.domain.winner.service.WinnerService
 import com.example.backend2.global.exception.ServiceException
 import io.mockk.every
 import io.mockk.mockk
@@ -35,37 +36,41 @@ class WinnerServiceTest {
     fun `getWinnerList should return list of winners`() {
         // given
         val userUUID = "test-uuid"
-        val user = User(
-            userUUID = userUUID,
-            email = "test@example.com",
-            nickname = "테스트유저",
-            password = "password",
-            role = Role.USER
-        )
+        val user =
+            User(
+                userUUID = userUUID,
+                email = "test@example.com",
+                nickname = "테스트유저",
+                password = "password",
+                role = Role.USER,
+            )
 
-        val product = Product(
-            productName = "테스트 상품",
-            description = "테스트 설명",
-            imageUrl = "http://example.com/image.jpg"
-        )
+        val product =
+            Product(
+                productName = "테스트 상품",
+                description = "테스트 설명",
+                imageUrl = "http://example.com/image.jpg",
+            )
 
-        val auction = Auction(
-            auctionId = 1L,
-            product = product,
-            startPrice = 1000,
-            minBid = 100,
-            startTime = LocalDateTime.now(),
-            endTime = LocalDateTime.now().plusDays(1),
-            status = AuctionStatus.ONGOING
-        )
+        val auction =
+            Auction(
+                auctionId = 1L,
+                product = product,
+                startPrice = 1000,
+                minBid = 100,
+                startTime = LocalDateTime.now(),
+                endTime = LocalDateTime.now().plusDays(1),
+                status = AuctionStatus.ONGOING,
+            )
 
-        val winner = Winner(
-            winnerId = 1L,
-            user = user,
-            auction = auction,
-            winningBid = 1500,
-            winTime = LocalDateTime.now()
-        )
+        val winner =
+            Winner(
+                winnerId = 1L,
+                user = user,
+                auction = auction,
+                winningBid = 1500,
+                winTime = LocalDateTime.now(),
+            )
 
         every { winnerRepository.findByUserUserUUID(userUUID) } returns listOf(winner)
 
@@ -95,9 +100,10 @@ class WinnerServiceTest {
         every { winnerRepository.findByUserUserUUID(userUUID) } returns emptyList()
 
         // when & then
-        val exception = assertThrows<ServiceException> {
-            winnerService.getWinnerList(userUUID)
-        }
+        val exception =
+            assertThrows<ServiceException> {
+                winnerService.getWinnerList(userUUID)
+            }
 
         assertThat(exception.message).isEqualTo("낙찰자가 존재하지 않습니다.")
     }

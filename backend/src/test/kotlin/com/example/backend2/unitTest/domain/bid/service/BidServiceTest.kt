@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:no-wildcard-imports")
 
-package com.example.backend2.domain.bid.service
+package com.example.backend2.unitTest.domain.bid.service
 
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.data.Role
@@ -9,11 +9,13 @@ import com.example.backend2.domain.auction.entity.Auction
 import com.example.backend2.domain.auction.service.AuctionService
 import com.example.backend2.domain.bid.entity.Bid
 import com.example.backend2.domain.bid.repository.BidRepository
+import com.example.backend2.domain.bid.service.BidService
 import com.example.backend2.domain.product.entity.Product
 import com.example.backend2.domain.user.entity.User
 import com.example.backend2.domain.user.service.UserService
 import com.example.backend2.global.exception.ServiceException
 import com.example.backend2.global.redis.RedisCommon
+import com.example.backend2.global.redis.lock.DistributedLockService
 import com.example.backend2.global.utils.JwtProvider
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
@@ -23,6 +25,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
+import java.util.concurrent.TimeUnit
 
 /**
  * 입찰 서비스의 단위 테스트 클래스
@@ -37,6 +40,7 @@ class BidServiceTest {
     private lateinit var bidRepository: BidRepository
     private lateinit var jwtProvider: JwtProvider
     private lateinit var redisCommon: RedisCommon
+    private lateinit var distributedLockService: DistributedLockService
 
     @BeforeEach
     fun setUp() {
@@ -45,7 +49,22 @@ class BidServiceTest {
         bidRepository = mockk()
         redisCommon = mockk()
         jwtProvider = mockk()
-        bidService = BidService(auctionService, userService, bidRepository, redisCommon, jwtProvider)
+        distributedLockService = mockk()
+        bidService = BidService(auctionService, userService, bidRepository, redisCommon, jwtProvider, distributedLockService)
+        
+        // 분산 락 모킹 설정
+        every { 
+            distributedLockService.withLock<Any>(
+                any(), 
+                any(), 
+                any(), 
+                any()
+            ) 
+        } answers { 
+            // 마지막 인자인 람다 함수를 실행하고 그 결과를 반환
+            val lambda = args[3] as () -> Any
+            lambda()
+        }
     }
 
     /**
@@ -94,6 +113,12 @@ class BidServiceTest {
                 bidTime = LocalDateTime.now(),
             )
 
+        // 핵심 Mock - executeInTransaction (Boolean 타입 명시)
+        every { redisCommon.executeInTransaction<Boolean>(any()) } answers {
+            val block = firstArg<() -> Boolean>()
+            block()
+        }
+
         // when
         val result = bidService.createBid(1L, request)
 
@@ -112,6 +137,7 @@ class BidServiceTest {
             redisCommon.putInHash("auction:1", "amount", 1500)
             redisCommon.putInHash("auction:1", "userUUID", "test-uuid")
             bidRepository.save(any())
+            distributedLockService.withLock<Any>("auction:1:bid", 5, TimeUnit.SECONDS, any())
         }
 
         // 로그용 전체 응답 출력
@@ -179,6 +205,7 @@ class BidServiceTest {
             jwtProvider.parseUserUUID(request.token)
             userService.getUserByUUID("test-uuid")
             auctionService.getAuctionWithValidation(1L)
+            distributedLockService.withLock<Any>("auction:1:bid", 5, TimeUnit.SECONDS, any())
         }
     }
 
@@ -220,6 +247,12 @@ class BidServiceTest {
                 token = "test-token",
             )
 
+        // 필수 Mock 추가!
+        every { redisCommon.executeInTransaction<Boolean>(any()) } answers {
+            val block = firstArg<() -> Boolean>()
+            block()
+        }
+
         every { jwtProvider.parseUserUUID(request.token) } returns "test-uuid"
         every { userService.getUserByUUID("test-uuid") } returns user
         every { auctionService.getAuctionWithValidation(1L) } returns auction
@@ -237,6 +270,7 @@ class BidServiceTest {
             auctionService.getAuctionWithValidation(1L)
             redisCommon.getFromHash("auction:1", "amount", Int::class.java)
             redisCommon.getFromHash("auction:1", "userUUID", String::class.java)
+            distributedLockService.withLock<Any>("auction:1:bid", 5, TimeUnit.SECONDS, any())
         }
     }
 } 

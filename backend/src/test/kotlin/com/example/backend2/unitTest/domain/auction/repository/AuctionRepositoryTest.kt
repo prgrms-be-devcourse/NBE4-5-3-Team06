@@ -1,7 +1,8 @@
-package com.example.backend2.domain.auction.repository
+package com.example.backend2.unitTest.domain.auction.repository
 
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.domain.auction.entity.Auction
+import com.example.backend2.domain.auction.repository.AuctionRepository
 import com.example.backend2.domain.product.entity.Product
 import com.example.backend2.domain.product.repository.ProductRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -10,13 +11,17 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.jdbc.Sql
 import java.time.LocalDateTime
 
 @DataJpaTest
 @ActiveProfiles("test")
+@Sql(
+    statements = ["DELETE FROM BID_TABLE", "DELETE FROM WINNER_TABLE", "DELETE FROM AUCTION_TABLE", "DELETE FROM PRODUCT_TABLE", "DELETE FROM USER_TABLE"],
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD,
+)
 @DisplayName("AuctionRepository 단위 테스트")
 class AuctionRepositoryTest {
-
     @Autowired
     private lateinit var auctionRepository: AuctionRepository
 
@@ -27,23 +32,25 @@ class AuctionRepositoryTest {
     @DisplayName("경매 목록 조회 테스트")
     fun `findAllAuctions should return all auctions with products`() {
         // given
-        val product = productRepository.save(
-            Product(
-                productName = "테스트 상품",
-                description = "테스트 설명"
+        val product =
+            productRepository.save(
+                Product(
+                    productName = "테스트 상품",
+                    description = "테스트 설명",
+                ),
             )
-        )
 
-        val auction = auctionRepository.save(
-            Auction(
-                product = product,
-                startPrice = 1000,
-                minBid = 100,
-                startTime = LocalDateTime.now(),
-                endTime = LocalDateTime.now().plusDays(1),
-                status = AuctionStatus.ONGOING
+        val auction =
+            auctionRepository.save(
+                Auction(
+                    product = product,
+                    startPrice = 1000,
+                    minBid = 100,
+                    startTime = LocalDateTime.now(),
+                    endTime = LocalDateTime.now().plusDays(1),
+                    status = AuctionStatus.ONGOING,
+                ),
             )
-        )
 
         // when
         val result = auctionRepository.findAllAuctions()
@@ -65,23 +72,25 @@ class AuctionRepositoryTest {
     @DisplayName("경매 ID로 조회 테스트")
     fun `findByAuctionId should return auction when exists`() {
         // given
-        val product = productRepository.save(
-            Product(
-                productName = "테스트 상품",
-                description = "테스트 설명"
+        val product =
+            productRepository.save(
+                Product(
+                    productName = "테스트 상품",
+                    description = "테스트 설명",
+                ),
             )
-        )
 
-        val auction = auctionRepository.save(
-            Auction(
-                product = product,
-                startPrice = 1000,
-                minBid = 100,
-                startTime = LocalDateTime.now(),
-                endTime = LocalDateTime.now().plusDays(1),
-                status = AuctionStatus.ONGOING
+        val auction =
+            auctionRepository.save(
+                Auction(
+                    product = product,
+                    startPrice = 1000,
+                    minBid = 100,
+                    startTime = LocalDateTime.now(),
+                    endTime = LocalDateTime.now().plusDays(1),
+                    status = AuctionStatus.ONGOING,
+                ),
             )
-        )
 
         // when
         val result = auctionRepository.findByAuctionId(auction.auctionId!!)
@@ -102,4 +111,4 @@ class AuctionRepositoryTest {
         // then
         assertThat(result).isNull()
     }
-} 
+}

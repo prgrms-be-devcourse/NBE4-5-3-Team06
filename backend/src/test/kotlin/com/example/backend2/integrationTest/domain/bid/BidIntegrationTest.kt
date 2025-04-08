@@ -274,12 +274,13 @@ class BidIntegrationTest {
 
         // 단일 입찰로 먼저 테스트 (반드시 성공)
         try {
-            val singleBidRequest = AuctionBidRequest(
-                auctionId = auction.auctionId!!,
-                amount = 11000, // 최소 입찰가
-                token = bidderTokens[0]
-            )
-            
+            val singleBidRequest =
+                AuctionBidRequest(
+                    auctionId = auction.auctionId!!,
+                    amount = 11000, // 최소 입찰가
+                    token = bidderTokens[0],
+                )
+
             val response = bidService.createBid(singleBidRequest.auctionId, singleBidRequest)
             successfulBids.add(singleBidRequest.amount)
             println("첫 입찰 성공: ${singleBidRequest.amount}")
@@ -291,7 +292,7 @@ class BidIntegrationTest {
         // 나머지 입찰 시도
         bidders.forEachIndexed { index, _ ->
             if (index == 0) return@forEachIndexed // 첫 번째 사용자는 이미 입찰 완료
-            
+
             try {
                 val bidRequest =
                     AuctionBidRequest(
@@ -320,7 +321,7 @@ class BidIntegrationTest {
             // 입찰이 모두 실패한 경우 테스트를 건너뛰기
             return
         }
-        
+
         // 최소한 하나 이상의 입찰이 성공한 경우에만 검증
         assertThat(successfulBids).isNotEmpty()
         val highestExpectedBid = successfulBids.maxOrNull() ?: 10000
@@ -368,4 +369,98 @@ class BidIntegrationTest {
         val afterCount = bidRepository.count()
         assertThat(afterCount).isEqualTo(beforeCount)
     }
+
+/*    @Test
+    @DisplayName("분산락을 이용한 동시 입찰 처리 테스트")
+    fun testConcurrentBidding() {
+        // Given
+        val threadCount = 3
+        val latch = CountDownLatch(1)
+        val executor = Executors.newFixedThreadPool(threadCount)
+
+        // Create separate users for each bid to avoid conflicts
+        val bidders = (1..3).map { i ->
+            userRepository.save(
+                User(
+                    userUUID = "concurrent-bidder-uuid-$i",
+                    email = "concurrent-bidder$i@example.com",
+                    nickname = "동시입찰자$i",
+                    password = "password",
+                    role = Role.USER,
+                )
+            )
+        }
+
+        // Force the transaction to commit by explicitly reading back the users
+        val refreshedBidders = bidders.map { bidder ->
+            userRepository.findByUserUUID(bidder.userUUID).orElseThrow { RuntimeException("User not found: ${bidder.userUUID}") }
+        }
+
+        println("Created bidders: ${refreshedBidders.map { it.userUUID }}")
+
+        // Create separate tokens for each bidder
+        val tokens = refreshedBidders.map { bidder ->
+            val claims = mapOf(
+                "userUUID" to bidder.userUUID,
+                "nickname" to bidder.nickname,
+                "role" to bidder.role.name,
+            )
+            jwtProvider.generateToken(claims, bidder.email)
+        }
+
+        // Create bids with different tokens to represent different users
+        val bids = listOf(
+            AuctionBidRequest(auctionId = auction.auctionId!!, token = tokens[0], amount = 11000),
+            AuctionBidRequest(auctionId = auction.auctionId!!, token = tokens[1], amount = 12000),
+            AuctionBidRequest(auctionId = auction.auctionId!!, token = tokens[2], amount = 13000),
+        )
+
+        // Redis에 경매 정보 초기 설정 (startPrice로 설정)
+        val hashKey = "auction:${auction.auctionId}"
+        redisCommon.putInHash(hashKey, "amount", auction.startPrice)
+        redisCommon.putInHash(hashKey, "userUUID", seller.userUUID)
+
+        // When
+        val bidFutures =
+            bids.mapIndexed { index, bidRequest ->
+                executor.submit {
+                    try {
+                        // Make sure user exists before the latch countdown
+                        val user = userRepository.findByUserUUID(refreshedBidders[index].userUUID)
+                        println("Thread ${index+1} found user: ${user.isPresent}")
+
+                        latch.await() // 모든 스레드가 동시에 시작하도록 대기
+                        try {
+                            val response = bidService.createBid(auction.auctionId!!, bidRequest)
+                            println("Bid successful: ${bidRequest.amount} by ${refreshedBidders[index].nickname}, response: ${response.bidAmount}")
+                        } catch (e: Exception) {
+                            println("Error in thread ${index+1}: ${e.message}")
+                        }
+                    } catch (e: Exception) {
+                        println("Error before latch in thread ${index+1}: ${e.message}")
+                    }
+                }
+            }
+
+        // 모든 스레드를 동시에 시작
+        latch.countDown()
+
+        // 모든 스레드가 완료될 때까지 기다림
+        executor.shutdown()
+        executor.awaitTermination(10, TimeUnit.SECONDS)
+
+        // Then
+        // 모든 입찰이 저장되었는지 확인
+        val savedBids = bidRepository.findAllByAuctionOrderByBidTimeDesc(auction)
+        println("Saved bids: ${savedBids.size}, amounts: ${savedBids.map { it.amount }}")
+        assertEquals(3, savedBids.size)
+
+        // 최고 입찰가 확인
+        val highestBid = savedBids.first()
+        assertEquals(13000, highestBid.amount)
+
+        // 입찰 금액 확인 (시간 역순으로 정렬되어 있어 금액도 내림차순이어야 함)
+        val bidAmounts = savedBids.map { it.amount }
+        assertEquals(listOf(13000, 12000, 11000), bidAmounts)
+    }*/
 }
