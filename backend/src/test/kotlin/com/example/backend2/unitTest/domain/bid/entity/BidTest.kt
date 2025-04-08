@@ -9,8 +9,10 @@ import com.example.backend2.domain.user.entity.User
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
+@ActiveProfiles("test")
 @DisplayName("Bid 엔티티 단위 테스트")
 class BidTest {
     @Test
@@ -44,17 +46,23 @@ class BidTest {
                 role = Role.USER,
             )
 
+        val bidTime = LocalDateTime.now()
         val bid =
             Bid(
                 bidId = 1L,
                 auction = auction,
                 user = user,
                 amount = 1000,
-                bidTime = LocalDateTime.now(),
+                bidTime = bidTime,
             )
 
+        println("🟡 BEFORE UPDATE → amount: ${bid.amount}")
+
         // when
+        Thread.sleep(1)
         val updatedBid = bid.updateAmount(1500)
+
+        println("🟢 AFTER UPDATE  → amount: ${updatedBid.amount}")
 
         // then
         assertThat(updatedBid.amount).isEqualTo(1500)
