@@ -1,4 +1,4 @@
-package com.example.backend2.domain.winner.service
+package com.example.backend2.unitTest.domain.winner.service
 
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.data.Role
@@ -7,6 +7,7 @@ import com.example.backend2.domain.product.entity.Product
 import com.example.backend2.domain.user.entity.User
 import com.example.backend2.domain.winner.entity.Winner
 import com.example.backend2.domain.winner.repository.WinnerRepository
+import com.example.backend2.domain.winner.service.WinnerService
 import com.example.backend2.global.exception.ServiceException
 import io.mockk.every
 import io.mockk.mockk

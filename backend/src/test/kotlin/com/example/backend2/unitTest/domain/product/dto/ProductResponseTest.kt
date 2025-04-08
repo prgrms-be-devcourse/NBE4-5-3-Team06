@@ -1,9 +1,10 @@
-package com.example.backend2.domain.product.dto
+package com.example.backend2.unitTest.domain.product.dto
 
+import com.example.backend2.domain.product.dto.ProductResponse
 import com.example.backend2.domain.product.entity.Product
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.assertj.core.api.Assertions.assertThat
 import org.springframework.test.context.ActiveProfiles
 
 @ActiveProfiles("test")

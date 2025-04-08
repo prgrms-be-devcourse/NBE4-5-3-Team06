@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:no-wildcard-imports")
 
-package com.example.backend2.domain.user.service
+package com.example.backend2.unitTest.domain.user.service
 
 import com.example.backend2.data.Role
 import com.example.backend2.domain.user.dto.UserPutRequest
@@ -8,6 +8,8 @@ import com.example.backend2.domain.user.dto.UserSignInRequest
 import com.example.backend2.domain.user.dto.UserSignUpRequest
 import com.example.backend2.domain.user.entity.User
 import com.example.backend2.domain.user.repository.UserRepository
+import com.example.backend2.domain.user.service.EmailService
+import com.example.backend2.domain.user.service.UserService
 import com.example.backend2.global.exception.ServiceException
 import com.example.backend2.global.utils.JwtProvider
 import io.mockk.every

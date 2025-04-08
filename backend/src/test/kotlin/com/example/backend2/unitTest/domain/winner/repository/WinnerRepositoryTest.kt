@@ -1,4 +1,4 @@
-package com.example.backend2.domain.winner.repository
+package com.example.backend2.unitTest.domain.winner.repository
 
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.data.Role
@@ -9,16 +9,19 @@ import com.example.backend2.domain.product.repository.ProductRepository
 import com.example.backend2.domain.user.entity.User
 import com.example.backend2.domain.user.repository.UserRepository
 import com.example.backend2.domain.winner.entity.Winner
+import com.example.backend2.domain.winner.repository.WinnerRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.jdbc.Sql
 import java.time.LocalDateTime
 
 @DataJpaTest
 @ActiveProfiles("test")
+@Sql(statements = ["DELETE FROM BID_TABLE", "DELETE FROM WINNER_TABLE", "DELETE FROM AUCTION_TABLE", "DELETE FROM PRODUCT_TABLE", "DELETE FROM USER_TABLE"], executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @DisplayName("WinnerRepository 단위 테스트")
 class WinnerRepositoryTest {
 
