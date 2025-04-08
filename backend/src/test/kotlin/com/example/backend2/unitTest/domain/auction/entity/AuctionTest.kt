@@ -7,12 +7,14 @@ import com.example.backend2.domain.winner.entity.Winner
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
 /**
  * 경매 엔티티의 단위 테스트 클래스
  * 경매 생성 및 낙찰자 설정 기능을 테스트
  */
+@ActiveProfiles("test")
 @DisplayName("Auction 엔티티 단위 테스트")
 class AuctionTest {
     /**

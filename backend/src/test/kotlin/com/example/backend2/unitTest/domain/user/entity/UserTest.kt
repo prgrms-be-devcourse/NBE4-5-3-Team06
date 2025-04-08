@@ -1,17 +1,20 @@
-package com.example.backend2.unitTest.domain.user.entity
+package com.example.backend2.domain.user.entity
 
 import com.example.backend2.data.Role
-import com.example.backend2.domain.user.entity.User
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.assertj.core.api.Assertions.assertThat
+import org.springframework.test.context.ActiveProfiles
+import java.time.LocalDateTime
 
 /**
  * 사용자 엔티티의 단위 테스트 클래스
  * 사용자 생성 및 정보 업데이트 기능을 테스트
  */
+@ActiveProfiles("test")
 @DisplayName("User 엔티티 단위 테스트")
 class UserTest {
+
     /**
      * 사용자 생성 테스트
      * 새로운 사용자가 올바른 속성값으로 생성되는지 확인
@@ -28,15 +31,14 @@ class UserTest {
         val role = Role.USER
 
         // when
-        val user =
-            User(
-                userUUID = userUUID,
-                email = email,
-                nickname = nickname,
-                password = password,
-                profileImage = profileImage,
-                role = role,
-            )
+        val user = User(
+            userUUID = userUUID,
+            email = email,
+            nickname = nickname,
+            password = password,
+            profileImage = profileImage,
+            role = role
+        )
 
         // then
         assertThat(user.userUUID).isEqualTo(userUUID)
@@ -59,22 +61,20 @@ class UserTest {
     @DisplayName("사용자 정보 업데이트 테스트")
     fun `update user should update user information`() {
         // given
-        val user =
-            User(
-                userUUID = "test-uuid",
-                email = "test@example.com",
-                nickname = "테스트유저",
-                password = "password",
-                role = Role.USER,
-            )
+        val user = User(
+            userUUID = "test-uuid",
+            email = "test@example.com",
+            nickname = "테스트유저",
+            password = "password",
+            role = Role.USER
+        )
 
         // when
-        val updatedUser =
-            user.copy(
-                email = "updated@example.com",
-                nickname = "수정된유저",
-                profileImage = "http://example.com/new-profile.jpg",
-            )
+        val updatedUser = user.copy(
+            email = "updated@example.com",
+            nickname = "수정된유저",
+            profileImage = "http://example.com/new-profile.jpg"
+        )
 
         // then
         assertThat(updatedUser.userUUID).isEqualTo(user.userUUID)

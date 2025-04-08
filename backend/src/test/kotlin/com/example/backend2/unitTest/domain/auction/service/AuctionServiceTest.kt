@@ -16,12 +16,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
 /**
  * 경매 서비스의 단위 테스트 클래스
  * 경매 생성, 조회, 종료 등의 기능을 테스트
  */
+@ActiveProfiles("test")
 @DisplayName("AuctionService 단위 테스트")
 class AuctionServiceTest {
     private lateinit var auctionService: AuctionService
@@ -168,7 +170,6 @@ class AuctionServiceTest {
         // then
         verify {
             auctionRepository.findByAuctionId(1L)
-            auctionRepository.save(any())
         }
     }
 

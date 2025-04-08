@@ -1,9 +1,10 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false
     username: sa
     password:
     driver-class-name: org.h2.Driver
+
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -17,9 +18,15 @@ spring:
       port: 6379
       password: "pk2258"
 
+  h2:
+    console:
+      enabled: false
+
 jwt:
   secret: testSecretKeyForIntegrationTestOnlyDoNotUseInProduction
   expiration: 3600000 # 1시간
+
+# 프로파일 이름은 test로 고정
 
 logging:
   level:

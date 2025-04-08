@@ -43,7 +43,7 @@ class BidController(
                 currentBid = request.amount,
             )
 
-        simpMessagingTemplate.convertAndSend("/topic/auction/${request.auctionId}", res)
+        simpMessagingTemplate.convertAndSend("/sub/auction/${request.auctionId}", res)
         log.info { "입찰 브로드캐스트 완료: /sub/auction/${request.auctionId}" }
     }
 }

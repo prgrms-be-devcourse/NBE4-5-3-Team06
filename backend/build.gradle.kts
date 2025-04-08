@@ -42,9 +42,6 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     testImplementation("io.mockk:mockk:1.13.9")
-
-    // 데이터베이스
-    runtimeOnly("com.h2database:h2")
 }
 
 kotlin {
@@ -55,10 +52,11 @@ kotlin {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    
+
     // Configure Mockito agent to address the dynamic agent loading warning
-    jvmArgs = listOf(
-        "-javaagent:${configurations.testRuntimeClasspath.get().find { it.name.contains("byte-buddy-agent") }?.absolutePath}",
-        "-Dmockito.inline.extended=true"
-    )
+    jvmArgs =
+        listOf(
+            "-javaagent:${configurations.testRuntimeClasspath.get().find { it.name.contains("byte-buddy-agent") }?.absolutePath}",
+            "-Dmockito.inline.extended=true",
+        )
 }

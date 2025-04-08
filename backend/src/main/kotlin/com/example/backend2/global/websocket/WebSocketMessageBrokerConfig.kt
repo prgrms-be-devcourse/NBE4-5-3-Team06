@@ -19,7 +19,7 @@ class WebSocketMessageBrokerConfig(
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         // 클라이언트가 연결할 엔드포인트
         registry
-            .addEndpoint("/ws/auction/{auctionId}")
+            .addEndpoint("/ws")
             .setAllowedOriginPatterns("http://localhost:*", "http://35.203.149.35:3000") // CORS 허용 (모든 도메인 허용)
             .addInterceptors(stompHandshakeHandler) // HandshakeInterceptor 추가 (JWT 검증)
             .withSockJS() // socket fallback 지원

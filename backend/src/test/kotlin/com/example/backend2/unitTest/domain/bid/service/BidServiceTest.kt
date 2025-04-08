@@ -1,4 +1,6 @@
-package com.example.backend2.unitTest.domain.bid.service
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
+package com.example.backend2.domain.bid.service
 
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.data.Role
@@ -7,35 +9,34 @@ import com.example.backend2.domain.auction.entity.Auction
 import com.example.backend2.domain.auction.service.AuctionService
 import com.example.backend2.domain.bid.entity.Bid
 import com.example.backend2.domain.bid.repository.BidRepository
-import com.example.backend2.domain.bid.service.BidService
 import com.example.backend2.domain.product.entity.Product
 import com.example.backend2.domain.user.entity.User
 import com.example.backend2.domain.user.service.UserService
 import com.example.backend2.global.exception.ServiceException
 import com.example.backend2.global.redis.RedisCommon
 import com.example.backend2.global.utils.JwtProvider
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 
 /**
  * 입찰 서비스의 단위 테스트 클래스
  * 입찰 생성, 검증, 예외 처리 등의 기능을 테스트
  */
+@ActiveProfiles("test")
 @DisplayName("BidService 단위 테스트")
 class BidServiceTest {
-    private lateinit var bidService: BidService
     private lateinit var auctionService: AuctionService
     private lateinit var userService: UserService
+    private lateinit var bidService: BidService
     private lateinit var bidRepository: BidRepository
-    private lateinit var redisCommon: RedisCommon
     private lateinit var jwtProvider: JwtProvider
+    private lateinit var redisCommon: RedisCommon
 
     @BeforeEach
     fun setUp() {
@@ -55,17 +56,10 @@ class BidServiceTest {
     @DisplayName("입찰 생성 성공 테스트")
     fun `createBid should create bid successfully`() {
         // given
-        val product =
-            Product(
-                productId = 1L,
-                productName = "테스트 상품",
-                description = "테스트 설명",
-            )
-
         val auction =
             Auction(
                 auctionId = 1L,
-                product = product,
+                product = Product(productId = 1L, productName = "테스트 상품", description = "테스트 설명"),
                 startPrice = 1000,
                 minBid = 100,
                 startTime = LocalDateTime.now().minusHours(1),
@@ -82,18 +76,15 @@ class BidServiceTest {
                 role = Role.USER,
             )
 
-        val request =
-            AuctionBidRequest(
-                auctionId = 1L,
-                amount = 1500,
-                token = "test-token",
-            )
+        val request = AuctionBidRequest(auctionId = 1L, amount = 1500, token = "test-token")
 
         every { jwtProvider.parseUserUUID(request.token) } returns "test-uuid"
         every { userService.getUserByUUID("test-uuid") } returns user
         every { auctionService.getAuctionWithValidation(1L) } returns auction
         every { redisCommon.getFromHash(any(), "amount", Int::class.java) } returns 1000
         every { redisCommon.getFromHash(any(), "userUUID", String::class.java) } returns "other-uuid"
+        every { redisCommon.putInHash("auction:1", "amount", 1500) } just runs
+        every { redisCommon.putInHash("auction:1", "userUUID", "test-uuid") } just runs
         every { bidRepository.save(any()) } returns
             Bid(
                 bidId = 1L,
@@ -122,6 +113,15 @@ class BidServiceTest {
             redisCommon.putInHash("auction:1", "userUUID", "test-uuid")
             bidRepository.save(any())
         }
+
+        // 로그용 전체 응답 출력
+        println("🔹 입찰 응답 결과: $result")
+
+        // 상세 필드 출력
+        println(" 경매 ID: ${result.auctionId} ")
+        println(" 입찰자 UUID: ${result.userUUID} ")
+        println(" 입찰 금액: ${result.bidAmount} ")
+        println(" 입찰자 닉네임: ${result.nickname} ")
     }
 
     /**

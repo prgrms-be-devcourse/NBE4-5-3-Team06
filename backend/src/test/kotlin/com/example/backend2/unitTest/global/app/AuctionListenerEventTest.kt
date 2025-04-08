@@ -15,9 +15,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 import java.util.*
 
+@ActiveProfiles("test")
 class AuctionListenerEventTest {
     private lateinit var winnerRepository: WinnerRepository
     private lateinit var userRepository: UserRepository
