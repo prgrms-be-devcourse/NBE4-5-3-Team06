@@ -1,0 +1,54 @@
+version: '3.8'  # Docker Compose 파일의 버전 설정
+
+networks:  # 네트워크 정의
+  monitor:  # 'monitor'라는 이름의 네트워크 생성
+    driver: bridge  # 기본 브리지 네트워크 드라이버 사용
+
+services:  # 서비스 정의
+  redis:  # Redis 서비스 설정
+    container_name: redis  # 컨테이너 이름 설정
+    image: redis:7.4  # Redis 이미지 버전 7.4 사용
+    ports:
+      - "6379:6379"  # 호스트와 컨테이너 간 포트 매핑 (6379 포트)
+    command: ["redis-server", "--requirepass", "pk2258"]
+    networks:
+      - monitor  # 'monitor' 네트워크에 연결
+    restart: always  # 컨테이너가 종료되면 자동으로 재시작
+
+  prometheus:  # Prometheus 서비스 설정
+    image: prom/prometheus:latest  # Prometheus 최신 이미지 사용
+    container_name: prometheus  # 컨테이너 이름 설정
+    user: root  # root 사용자로 실행
+    restart: always  # 컨테이너가 종료되면 자동으로 재시작
+    ports:
+      - "9090:9090"  # 호스트와 컨테이너 간 포트 매핑 (9090 포트)
+    networks:
+      - monitor  # 'monitor' 네트워크에 연결
+
+  grafana:  # Grafana 서비스 설정
+    image: grafana/grafana:latest  # Grafana 최신 이미지 사용
+    container_name: grafana  # 컨테이너 이름 설정
+    restart: always  # 컨테이너가 종료되면 자동으로 재시작
+    ports:
+      - "3001:3000"  # 호스트와 컨테이너 간 포트 매핑 (3001 포트)
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin  # 관리자 사용자명 설정
+      - GF_SECURITY_ADMIN_PASSWORD=pk2258  # 관리자 비밀번호 설정
+      - GF_USERS_ALLOW_SIGN_UP=false  # 사용자 가입을 허용하지 않음
+    depends_on:
+      - prometheus  # prometheus 서비스가 먼저 시작되도록 의존성 설정
+    networks:
+      - monitor  # 'monitor' 네트워크에 연결
+
+  redis-exporter:  # Redis Exporter 서비스 설정
+    container_name: redis-exporter  # 컨테이너 이름 설정
+    image: oliver006/redis_exporter:latest  # Redis Exporter 최신 이미지 사용
+    environment:
+      - REDIS_ADDR=redis://redis:6379  # Redis 서버 주소 설정 (redis 컨테이너의 6379 포트)
+    ports:
+      - "9121:9121"  # 호스트와 컨테이너 간 포트 매핑 (9121 포트)
+    depends_on:
+      - prometheus  # prometheus 서비스가 먼저 시작되도록 의존성 설정
+    networks:
+      - monitor  # 'monitor' 네트워크에 연결
+    restart: always  # 컨테이너가 종료되면 자동으로 재시작
