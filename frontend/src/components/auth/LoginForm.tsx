@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;
@@ -21,12 +22,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
   };
 
   const handleGoogleLogin = () => {
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const redirectUri = encodeURIComponent("http://localhost:3000/api/auth/callback/google");
-    const scope = encodeURIComponent('email profile openid');
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&prompt=consent&include_granted_scopes=true`;
-    
-    window.location.href = authUrl;
+    signIn("google", { callbackUrl: "/" }); // ✅ 쿠키/상태 자동 처리됨
   };
 
   return (
