@@ -10,7 +10,7 @@ services:  # 서비스 정의
     image: redis:7.4  # Redis 이미지 버전 7.4 사용
     ports:
       - "6379:6379"  # 호스트와 컨테이너 간 포트 매핑 (6379 포트)
-    command: ["redis-server", "--requirepass", "pk2258"]
+    command: ["redis-server"]
     networks:
       - monitor  # 'monitor' 네트워크에 연결
     restart: always  # 컨테이너가 종료되면 자동으로 재시작
