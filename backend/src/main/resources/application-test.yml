@@ -26,7 +26,7 @@ jwt:
   secret: testSecretKeyForIntegrationTestOnlyDoNotUseInProduction
   expiration: 3600000 # 1시간
 
-# 프로파일 이름은 test로 고정
+# 프로파일 이름은 test로 고정.
 
 logging:
   level:
