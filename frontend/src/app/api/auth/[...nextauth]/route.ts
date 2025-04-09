@@ -2,26 +2,45 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-// 디버깅 로그 (환경변수 제대로 불러오는지 확인)
-console.log("✅ NEXT_PUBLIC_GOOGLE_CLIENT_ID:", process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
-console.log("✅ NEXT_PUBLIC_GOOGLE_CLIENT_SECRET:", process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET);
-console.log("✅ NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
-
 const handler = NextAuth({
   providers: [
     GoogleProvider({
-        clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET!,
     }),
   ],
   callbacks: {
-    async session({ session}) {
-      // 세션을 확장하거나 커스터마이징 가능
-    
+    // JWT 생성 시 사용자 정보 넣기
+    async jwt({ token, account, user }) {
+      if (account && user?.email) {
+        const res = await fetch("http://35.203.149.35:8080/api/auth/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.email }),
+        });
+
+        const data = await res.json();
+        token.accessToken = data.data.token;
+        token.user = {
+          email: user.email,
+          nickname: data.data.nickname,
+          userUUID: data.data.userUUID,
+          profileImage: data.data.profileImage,
+        };
+      }
+      return token;
+    },
+
+    // 세션 확장
+    async session({ session, token }) {
+      session.accessToken = token.accessToken;
+      session.user = {
+        ...session.user,
+        ...token.user,
+      };
       return session;
     },
   },
 });
 
-// GET / POST 요청을 NextAuth handler로 연결
 export { handler as GET, handler as POST };
