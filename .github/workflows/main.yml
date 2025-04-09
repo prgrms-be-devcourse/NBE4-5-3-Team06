@@ -62,7 +62,7 @@ jobs:
         uses: 8398a7/action-slack@v3  # 빌드 실패 시 Slack으로 알림을 보내는 액션
         with:
           status: ${{ job.status }}  # 현재 작업의 상태를 Slack 메시지로 보냄
-          author_name: 백엔드 빌드 실패 알림  # Slack 메시지의 작성자 이름
+          author_name: 백엔드 빌드 알림  # Slack 메시지의 작성자 이름
           fields: repo, message, commit, author, action, eventName, ref, workflow, job, took  # Slack 메시지에 포함될 필드들
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}  # Slack 웹훅 URL을 비밀값으로 설정
