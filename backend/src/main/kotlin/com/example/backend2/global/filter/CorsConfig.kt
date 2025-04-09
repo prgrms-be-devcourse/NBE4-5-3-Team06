@@ -11,7 +11,7 @@ class CorsConfig {
     @Bean
     fun corsFilter(): CorsFilter {
         val config = CorsConfiguration()
-        // config.addAllowedOrigin("http://localhost:3000") // 로컬 주소 주석 처리
+         config.addAllowedOrigin("http://localhost:3000") // 로컬 주소 주석 처리
         config.addAllowedOrigin("http://35.203.149.35:3000") // 배포 주소 추가
         config.addAllowedHeader("*")
         config.addAllowedMethod("*")
