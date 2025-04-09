@@ -14,19 +14,15 @@ export default function MyPageEdit() {
   const [profileImage, setProfileImage] = useState("");
   const [previewImage, setPreviewImage] = useState("/default-profile.png");
   const { data: session } = useSession();
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
   useEffect(() => {
     const localToken = getAccessToken();
     const { userUUID } = getUserInfo();
 
-    // ✅ 콘솔로 세션 확인
-    console.log("✅ session:", session);
-    console.log("✅ accessToken:", session?.accessToken);
-
-    // 전통 로그인 사용자
     if (userUUID) {
       axios
-        .get(`http://localhost:8080/api/auth/users/${userUUID}`, {
+        .get(`${API_BASE_URL}/auth/users/${userUUID}`, {
           headers: { Authorization: `Bearer ${localToken}` },
         })
         .then((res) => {
@@ -39,18 +35,11 @@ export default function MyPageEdit() {
         .catch(() => {
           alert("❌ 사용자 정보 불러오기 실패");
         });
-    }
-    // 구글 로그인 사용자
-    else if (session?.user?.email && session?.accessToken) {
+    } else if (session?.user?.email && session?.accessToken) {
       axios
-        .get(
-          `http://localhost:8080/api/auth/users/email?email=${session.user.email}`,
-          {
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          }
-        )
+        .get(`${API_BASE_URL}/auth/users/email?email=${session.user.email}`, {
+          headers: { Authorization: `Bearer ${session.accessToken}` },
+        })
         .then((res) => {
           const user = res.data.data;
           setNickname(user.nickname);
@@ -69,8 +58,9 @@ export default function MyPageEdit() {
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
-      setPreviewImage(reader.result as string);
-      setProfileImage(reader.result as string);
+      const result = reader.result as string;
+      setPreviewImage(result);
+      setProfileImage(result);
     };
     reader.readAsDataURL(file);
   };
@@ -82,7 +72,6 @@ export default function MyPageEdit() {
     let token = getAccessToken();
     let { userUUID } = getUserInfo();
 
-    // 구글 로그인 사용자라면 세션에서 가져오기
     if (!token && session?.accessToken) {
       token = session.accessToken as string;
     }
@@ -90,7 +79,7 @@ export default function MyPageEdit() {
     if (!userUUID && session?.user?.email && token) {
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/auth/users/email?email=${encodeURIComponent(session.user.email)}`,
+          `${API_BASE_URL}/auth/users/email?email=${encodeURIComponent(session.user.email)}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -108,7 +97,7 @@ export default function MyPageEdit() {
 
     try {
       await axios.put(
-        `http://localhost:8080/api/auth/users/${userUUID}`,
+        `${API_BASE_URL}/auth/users/${userUUID}`,
         {
           nickname,
           email,
@@ -122,8 +111,11 @@ export default function MyPageEdit() {
           },
         }
       );
+
       alert("✅ 저장되었습니다.");
-      router.push("/mypage");
+
+      // ✅ 변경 사항 즉시 반영
+      router.replace("/mypage"); // 또는 window.location.reload();
     } catch (err: any) {
       console.error("❌ 수정 실패:", err);
       alert("❌ 수정 실패: " + (err.response?.data?.msg || err.message));
@@ -141,12 +133,7 @@ export default function MyPageEdit() {
         />
         <label className="px-4 py-2 bg-gray-200 rounded cursor-pointer hover:bg-gray-300">
           이미지 변경
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleImageChange}
-          />
+          <input type="file" accept="image/*" hidden onChange={handleImageChange} />
         </label>
       </div>
 

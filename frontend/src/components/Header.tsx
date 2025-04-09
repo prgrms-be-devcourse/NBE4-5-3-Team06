@@ -28,19 +28,18 @@ export function Header() {
         const res = await fetch("http://localhost:8080/api/auth/logout", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`, // 백틱 사용
+            Authorization: `Bearer ${token}`,
           },
         });
         if (!res.ok) {
           throw new Error("로그아웃 요청 실패");
         }
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("nickname");
-        localStorage.removeItem("userUUID");
+        localStorage.clear();
       }
-      // NextAuth 로그아웃 처리 (구글 로그인 등)
-      await signOut({ callbackUrl: "/" });
-      router.push("/");
+
+      // ✅ 구글 로그아웃 처리 후 메인으로 이동
+      await signOut({ redirect: false });
+      router.replace("/");
     } catch (error) {
       console.error("로그아웃 실패:", error);
       alert("로그아웃 실패");

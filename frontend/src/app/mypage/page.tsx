@@ -25,51 +25,63 @@ export default function MyPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [auctions, setAuctions] = useState<Auction[]>([]);
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://35.203.149.35:8080/api";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
   const { data: session, status } = useSession();
-  
+
   // ✅ 세션 로그 찍기
   console.log("✅ session 정보:", session);
   console.log("✅ session.status:", status);
   console.log("✅ accessToken:", session?.accessToken);
   console.log("✅ user:", session?.user);
-  
+
   useEffect(() => {
-    const token = getAccessToken();
-    const uuid = userUUID || localStorage.getItem("userUUID");
-    console.log("✅ accessToken:", token);
-    // ✅ 전통 로그인 처리
-    if (uuid && token) {
+    const fetchUserData = async () => {
+      let token = getAccessToken();
+      let uuid = userUUID || localStorage.getItem("userUUID");
+
+      if (!uuid && session?.user?.email && session?.accessToken) {
+        token = session.accessToken;
+        try {
+          const res = await fetch(
+            `${API_BASE_URL}/auth/users/email?email=${session.user.email}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const data = await res.json();
+          uuid = data.data.userUUID;
+        } catch (err) {
+          console.error("UUID 조회 실패", err);
+          return;
+        }
+      }
+
+      if (!uuid || !token) return;
+
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
 
+      // 사용자 정보
       fetch(`${API_BASE_URL}/auth/users/${uuid}`, { headers })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => data?.data && setUser(data.data))
         .catch(console.error);
 
+      // 낙찰 경매 목록
       fetch(`${API_BASE_URL}/auctions/${uuid}/winner`, { headers })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => Array.isArray(data?.data) && setAuctions(data.data))
         .catch(console.error);
+    };
 
-      return;
+    if (status === "authenticated" || getAccessToken()) {
+      fetchUserData();
     }
-
-    // ✅ 구글 로그인 처리
-    if (status === "authenticated" && session?.user) {
-      const googleUser: User = {
-        email: session.user.email!,
-        nickname: session.user.name || "익명",
-        profileImage: session.user.image || undefined,
-      };
-      setUser(googleUser);
-
-      // TODO: 필요 시 email 기반 낙찰 경매 정보도 조회
-    }
-  }, [userUUID, session, status]);
+  }, [userUUID, session, status, router]);
 
   return (
     <div className="max-w-3xl mx-auto p-6">
