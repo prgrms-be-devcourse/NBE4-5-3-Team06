@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getAccessToken } from "@/lib/api/auth";
@@ -25,33 +26,47 @@ export default function MyPage() {
   const [user, setUser] = useState<User | null>(null);
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://35.203.149.35:8080/api";
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    let uuid = userUUID || localStorage.getItem("userUUID");
-    if (!uuid) {
+    const token = getAccessToken();
+    const uuid = userUUID || localStorage.getItem("userUUID");
+
+    // ✅ 1. 전통 로그인 처리
+    if (uuid && token) {
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+
+      // 사용자 정보
+      fetch(`${API_BASE_URL}/auth/users/${uuid}`, { headers })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => data?.data && setUser(data.data))
+        .catch(console.error);
+
+      // 낙찰 경매 목록
+      fetch(`${API_BASE_URL}/auctions/${uuid}/winner`, { headers })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => Array.isArray(data?.data) && setAuctions(data.data))
+        .catch(console.error);
+
       return;
     }
 
-    console.log("현재 userUUID 값:", uuid);
+    // ✅ 2. 구글 로그인 처리
+    if (status === "authenticated" && session?.user) {
+      const googleUser: User = {
+        email: session.user.email!,
+        nickname: session.user.name || "익명",
+        profileImage: session.user.image || undefined,
+      };
+      setUser(googleUser);
 
-    const token = getAccessToken();
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type":"application/json"
-    };
-
-    // 사용자 정보 가져오기
-    fetch(`${API_BASE_URL}/auth/users/${uuid}`, {headers})
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => data?.data && setUser(data.data))
-      .catch(console.error);
-
-    // 낙찰 받은 경매 목록 가져오기
-    fetch(`${API_BASE_URL}/auctions/${uuid}/winner`, {headers})
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => data?.data && Array.isArray(data.data) ? setAuctions(data.data) : [])
-      .catch(console.error);
-  }, [userUUID]);
+      // (선택) 낙찰 경매 목록은 백엔드에서 email 기반으로 조회가 가능하다면 추가
+      // fetch(`${API_BASE_URL}/auctions/email/${session.user.email}/winner`) ...
+    }
+  }, [userUUID, session, status]);
 
   return (
     <div className="max-w-3xl mx-auto p-6">
