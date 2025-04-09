@@ -27,7 +27,13 @@ jobs:
         image: redis:latest  # Redis Docker 이미지 사용
         ports:
           - 6379:6379  # Redis 포트 매핑
-        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3  # Redis의 상태를 확인하는 옵션
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+          --command redis-server --requirepass "pk2258"  # Redis 패스워드 설정
+
 
     steps:
       - name: 리포지토리를 가져옵니다
