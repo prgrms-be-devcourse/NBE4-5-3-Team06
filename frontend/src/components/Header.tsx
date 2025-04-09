@@ -25,7 +25,7 @@ export function Header() {
       // 전통 로그인 관련 로그아웃 처리
       const token = localStorage.getItem("accessToken");
       if (token) {
-        const res = await fetch("http://35.203.149.35:8080/api/auth/logout", {
+        const res = await fetch("http://localhost:8080/api/auth/logout", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`, // 백틱 사용
@@ -39,7 +39,7 @@ export function Header() {
         localStorage.removeItem("userUUID");
       }
       // NextAuth 로그아웃 처리 (구글 로그인 등)
-      await signOut();
+      await signOut({ callbackUrl: "/" });
       router.push("/");
     } catch (error) {
       console.error("로그아웃 실패:", error);

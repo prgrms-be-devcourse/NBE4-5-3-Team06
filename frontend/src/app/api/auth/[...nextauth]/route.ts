@@ -51,7 +51,7 @@ const handler = NextAuth({
       console.log("📦 세션 확장: token", token);
   
   session.accessToken = token.accessToken;   // ✅ JWT 토큰 전달
-          
+  session.user = token.user;   
 
   return session;
     },
