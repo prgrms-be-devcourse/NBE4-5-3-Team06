@@ -34,7 +34,6 @@ jobs:
           --health-retries=3
           --command redis-server --requirepass "pk2258"  # Redis 패스워드 설정
 
-
     steps:
       - name: 리포지토리를 가져옵니다
         uses: actions/checkout@v3  # GitHub 리포지토리를 체크아웃하는 액션
@@ -50,6 +49,8 @@ jobs:
 
       - name: Gradle build를 수행합니다
         run: ./gradlew build  # Gradle을 이용해 빌드를 수행
+        env:
+          SPRING_PROFILES_ACTIVE: test
 
       - name: 테스트 결과를 PR에 코멘트로 등록합니다
         uses: EnricoMi/publish-unit-test-result-action@v1  # 테스트 결과를 PR에 코멘트로 등록하는 액션
