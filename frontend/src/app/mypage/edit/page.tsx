@@ -14,17 +14,20 @@ export default function MyPageEdit() {
   const [profileImage, setProfileImage] = useState("");
   const [previewImage, setPreviewImage] = useState("/default-profile.png");
   const { data: session } = useSession();
-  console.log(session);
 
   useEffect(() => {
-    const token = getAccessToken();
+    const localToken = getAccessToken();
     const { userUUID } = getUserInfo();
-  
-    // 1. 전통 로그인 방식
+
+    // ✅ 콘솔로 세션 확인
+    console.log("✅ session:", session);
+    console.log("✅ accessToken:", session?.accessToken);
+
+    // 전통 로그인 사용자
     if (userUUID) {
       axios
-        .get(`http://35.203.149.35:8080/api/auth/users/${userUUID}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        .get(`http://localhost:8080/api/auth/users/${userUUID}`, {
+          headers: { Authorization: `Bearer ${localToken}` },
         })
         .then((res) => {
           const user = res.data.data;
@@ -37,12 +40,17 @@ export default function MyPageEdit() {
           alert("❌ 사용자 정보 불러오기 실패");
         });
     }
-    // 2. 구글 로그인 방식
-    else if (session?.user?.email) {
+    // 구글 로그인 사용자
+    else if (session?.user?.email && session?.accessToken) {
       axios
-        .get(`http://35.203.149.35:8080/api/auth/users/email?email=${session.user.email}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        .get(
+          `http://localhost:8080/api/auth/users/email?email=${session.user.email}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        )
         .then((res) => {
           const user = res.data.data;
           setNickname(user.nickname);
@@ -51,7 +59,7 @@ export default function MyPageEdit() {
           setPreviewImage(user.profileImage || "/default-profile.png");
         })
         .catch(() => {
-          alert("❌ 구글 로그인 사용자 정보 불러오기 실패");
+          alert("❌ 구글 사용자 정보 불러오기 실패");
         });
     }
   }, [session]);
@@ -70,32 +78,43 @@ export default function MyPageEdit() {
   const handleSave = async () => {
     if (!nickname.trim()) return alert("닉네임을 입력해주세요.");
     if (!email.trim()) return alert("이메일을 입력해주세요.");
-  
-    const token = getAccessToken();
+
+    let token = getAccessToken();
     let { userUUID } = getUserInfo();
-  
-    // 구글 로그인 유저인 경우 이메일 기반으로 UUID 조회
-    if (!userUUID && session?.user?.email) {
+
+    // 구글 로그인 사용자라면 세션에서 가져오기
+    if (!token && session?.accessToken) {
+      token = session.accessToken as string;
+    }
+
+    if (!userUUID && session?.user?.email && token) {
       try {
         const res = await axios.get(
-          `http://35.203.149.35:8080/api/auth/users/email?email=${encodeURIComponent(session.user.email)}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          `http://localhost:8080/api/auth/users/email?email=${encodeURIComponent(session.user.email)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
         userUUID = res.data.data.userUUID;
       } catch (e) {
-        console.error("❌ 이메일 기반 UUID 조회 실패", e);
-        return alert("구글 로그인 사용자 정보 불러오기 실패");
+        console.error("❌ UUID 조회 실패", e);
+        return alert("UUID 조회 실패");
       }
     }
-  
-    if (!userUUID) {
-      return alert("사용자 UUID를 찾을 수 없습니다.");
+
+    if (!userUUID || !token) {
+      return alert("사용자 인증 정보가 없습니다.");
     }
-  
+
     try {
       await axios.put(
-        `http://35.203.149.35:8080/api/auth/users/${userUUID}`,
-        { nickname, email, password: password || undefined, profileImage },
+        `http://localhost:8080/api/auth/users/${userUUID}`,
+        {
+          nickname,
+          email,
+          password: password || undefined,
+          profileImage,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,

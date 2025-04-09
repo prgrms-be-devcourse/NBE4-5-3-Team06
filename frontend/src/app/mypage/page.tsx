@@ -27,25 +27,29 @@ export default function MyPage() {
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://35.203.149.35:8080/api";
   const { data: session, status } = useSession();
-
+  
+  // ✅ 세션 로그 찍기
+  console.log("✅ session 정보:", session);
+  console.log("✅ session.status:", status);
+  console.log("✅ accessToken:", session?.accessToken);
+  console.log("✅ user:", session?.user);
+  
   useEffect(() => {
     const token = getAccessToken();
     const uuid = userUUID || localStorage.getItem("userUUID");
-
-    // ✅ 1. 전통 로그인 처리
+    console.log("✅ accessToken:", token);
+    // ✅ 전통 로그인 처리
     if (uuid && token) {
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
 
-      // 사용자 정보
       fetch(`${API_BASE_URL}/auth/users/${uuid}`, { headers })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => data?.data && setUser(data.data))
         .catch(console.error);
 
-      // 낙찰 경매 목록
       fetch(`${API_BASE_URL}/auctions/${uuid}/winner`, { headers })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => Array.isArray(data?.data) && setAuctions(data.data))
@@ -54,7 +58,7 @@ export default function MyPage() {
       return;
     }
 
-    // ✅ 2. 구글 로그인 처리
+    // ✅ 구글 로그인 처리
     if (status === "authenticated" && session?.user) {
       const googleUser: User = {
         email: session.user.email!,
@@ -63,8 +67,7 @@ export default function MyPage() {
       };
       setUser(googleUser);
 
-      // (선택) 낙찰 경매 목록은 백엔드에서 email 기반으로 조회가 가능하다면 추가
-      // fetch(`${API_BASE_URL}/auctions/email/${session.user.email}/winner`) ...
+      // TODO: 필요 시 email 기반 낙찰 경매 정보도 조회
     }
   }, [userUUID, session, status]);
 
@@ -73,13 +76,17 @@ export default function MyPage() {
       {/* 프로필 정보 */}
       <div className="flex items-center gap-6 p-4 border rounded-lg shadow">
         <div className="w-20 h-20 bg-gray-300 rounded-full overflow-hidden">
-          <img src={user?.profileImage || "/default-profile.png"} alt="Profile" className="w-full h-full object-cover" />
+          <img
+            src={user?.profileImage || "/default-profile.png"}
+            alt="Profile"
+            className="w-full h-full object-cover"
+          />
         </div>
         <div>
           <p className="text-lg font-semibold">{user?.nickname || "닉네임"}</p>
           <p className="text-gray-600">{user?.email || "email@example.com"}</p>
         </div>
-        <button 
+        <button
           className="ml-auto px-3 py-2 bg-blue-500 text-white rounded"
           onClick={() => router.push("/mypage/edit")}
         >
@@ -93,7 +100,6 @@ export default function MyPage() {
         {auctions.length > 0 ? (
           auctions.map((auction) => (
             <div key={auction.auctionId} className="relative flex border rounded-lg p-4 shadow gap-4">
-              {/* 이미지 영역 (가로 길이 늘리기) */}
               <div className="w-60 h-40 bg-gray-200 overflow-hidden rounded-lg flex-shrink-0">
                 <img
                   src={auction.imageUrl || "/default-image.jpg"}
@@ -102,16 +108,14 @@ export default function MyPage() {
                   onError={(e) => (e.currentTarget.src = "/default-image.jpg")}
                 />
               </div>
-
-              {/* 상품 정보 영역 */}
               <div className="flex flex-col justify-center flex-1 relative">
-                {/* 오른쪽 상단 결제 대기중 표시 */}
                 <p className="absolute right-2 top-2 text-red-500 text-sm font-semibold">결제 대기중</p>
-
                 <p className="text-lg font-semibold">{auction.productName}</p>
                 <p className="text-sm text-gray-600">{auction.description || "설명 없음"}</p>
                 <p className="text-gray-500 text-sm">{new Date(auction.winTime).toLocaleString()}</p>
-                <p className="text-blue-500 font-bold">낙찰가: ₩{auction.winningBid.toLocaleString()}원</p>
+                <p className="text-blue-500 font-bold">
+                  낙찰가: ₩{auction.winningBid.toLocaleString()}원
+                </p>
               </div>
             </div>
           ))
