@@ -137,4 +137,19 @@ class UserService(
         
         return count
     }
+
+    fun findOrCreateGoogleUser(email: String): User {
+        return userRepository.findByEmail(email).orElseGet {
+            val newUser = User(
+                userUUID = "${System.currentTimeMillis()}-${UUID.randomUUID()}",
+                email = email,
+                nickname = email.substringBefore("@"),
+                password = passwordEncoder.encode("google"), // 임시 비번
+                profileImage = null,
+                role = Role.USER
+            )
+            userRepository.save(newUser)
+        }
+    }
+
 }
