@@ -82,4 +82,4 @@ class ProductRepositoryTest {
         // then
         assertThat(foundProduct).isNull()
     }
-} 
+}

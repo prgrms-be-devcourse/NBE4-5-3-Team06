@@ -67,13 +67,13 @@ class UserServiceTest {
         every { userRepository.findByEmailOrNickname(any(), any()) } returns Optional.empty()
         every { passwordEncoder.encode(any()) } returns "encodedPassword"
         every { userRepository.save(any()) } returns
-            User(
-                userUUID = "test-uuid",
-                email = request.email,
-                password = "encodedPassword",
-                nickname = request.nickname,
-                role = Role.USER,
-            )
+                User(
+                    userUUID = "test-uuid",
+                    email = request.email,
+                    password = "encodedPassword",
+                    nickname = request.nickname,
+                    role = Role.USER,
+                )
         every { emailService.deleteVerificationCode(any()) } returns Unit
 
         // when
@@ -174,11 +174,11 @@ class UserServiceTest {
 
         every { userRepository.findByUserUUID(any()) } returns Optional.of(existingUser)
         every { userRepository.save(any()) } returns
-            existingUser.copy(
-                nickname = request.nickname!!,
-                profileImage = request.profileImage,
-                email = request.email!!,
-            )
+                existingUser.copy(
+                    nickname = request.nickname!!,
+                    profileImage = request.profileImage,
+                    email = request.email!!,
+                )
 
         // when
         val response = userService.updateUser(userUUID, request)
@@ -315,4 +315,4 @@ class UserServiceTest {
         println("유저 수정 실패 예외 발생 확인")
         println("code=${exception.code}, message=${exception.message}")
     }
-} 
+}

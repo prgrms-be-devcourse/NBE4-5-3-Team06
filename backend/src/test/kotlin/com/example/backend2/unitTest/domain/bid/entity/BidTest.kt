@@ -114,4 +114,4 @@ class BidTest {
         assertThat(bid.amount).isEqualTo(amount)
         assertThat(bid.bidTime).isEqualTo(bidTime)
     }
-} 
+}

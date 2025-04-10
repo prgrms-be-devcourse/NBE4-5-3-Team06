@@ -2,7 +2,6 @@
 
 package com.example.backend2.integrationTest.domain.winner
 
-import com.example.backend2.Backend2Application
 import com.example.backend2.data.AuctionStatus
 import com.example.backend2.data.Role
 import com.example.backend2.domain.auction.entity.Auction
@@ -29,7 +28,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
-@SpringBootTest(classes = [Backend2Application::class])
+@SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional

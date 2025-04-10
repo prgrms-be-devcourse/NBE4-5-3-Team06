@@ -87,13 +87,13 @@ class BidServiceTest {
         every { redisCommon.putInHash("auction:1", "amount", 1500) } just runs
         every { redisCommon.putInHash("auction:1", "userUUID", "test-uuid") } just runs
         every { bidRepository.save(any()) } returns
-            Bid(
-                bidId = 1L,
-                auction = auction,
-                user = user,
-                amount = 1500,
-                bidTime = LocalDateTime.now(),
-            )
+                Bid(
+                    bidId = 1L,
+                    auction = auction,
+                    user = user,
+                    amount = 1500,
+                    bidTime = LocalDateTime.now(),
+                )
 
         // 핵심 Mock - executeInTransaction (Boolean 타입 명시)
         every { redisCommon.executeInTransaction<Boolean>(any()) } answers {
@@ -252,4 +252,4 @@ class BidServiceTest {
             redisCommon.getFromHash("auction:1", "userUUID", String::class.java)
         }
     }
-} 
+}
