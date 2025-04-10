@@ -75,13 +75,13 @@ class AuctionService(
             }
         }
 
-        // 최소 등록 시간 검증 (현재 시간 기준 최소 2일 전)
-        requestDto.startTime?.let { startTime ->
-            val now = LocalDateTime.now()
-            if (startTime.isBefore(now.plusDays(2))) {
-                throw ServiceException(HttpStatus.BAD_REQUEST.value().toString(), "상품 등록 시간은 최소 2일 전부터 가능합니다.")
-            }
-        }
+//        // 최소 등록 시간 검증 (현재 시간 기준 최소 2일 전)
+//        requestDto.startTime?.let { startTime ->
+//            val now = LocalDateTime.now()
+//            if (startTime.isBefore(now.plusDays(2))) {
+//                throw ServiceException(HttpStatus.BAD_REQUEST.value().toString(), "상품 등록 시간은 최소 2일 전부터 가능합니다.")
+//            }
+//        }
 
         // 상품 정보 저장
         val product =
