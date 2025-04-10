@@ -152,4 +152,9 @@ class UserService(
         }
     }
 
+    fun getUserByEmail(email: String): User {
+        return userRepository.findByEmail(email)
+            .orElseThrow { IllegalArgumentException("해당 이메일로 사용자를 찾을 수 없습니다.") }
+    }
+
 }

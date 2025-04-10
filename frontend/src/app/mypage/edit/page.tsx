@@ -15,43 +15,50 @@ export default function MyPageEdit() {
   const [previewImage, setPreviewImage] = useState("/default-profile.png");
   const { data: session } = useSession();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+console.log("✅ 닉네임 확인:", session?.user?.name); // 조현우
+console.log("✅ 이메일 확인:", session?.user?.email); // gusdndlek12@gmail.com
 
-  useEffect(() => {
-    const localToken = getAccessToken();
-    const { userUUID } = getUserInfo();
+useEffect(() => {
+  const localToken = getAccessToken();
+  const { userUUID } = getUserInfo();
+  const sessionToken = session?.accessToken;
+  const email = session?.user?.email;
+  
+  // 구글 사용자 정보가 있으면 닉네임을 설정
+  const nicknameFromSession = session?.user?.nickname || session?.user?.name;
 
-    if (userUUID) {
-      axios
-        .get(`${API_BASE_URL}/auth/users/${userUUID}`, {
-          headers: { Authorization: `Bearer ${localToken}` },
-        })
-        .then((res) => {
-          const user = res.data.data;
-          setNickname(user.nickname);
-          setEmail(user.email);
-          setProfileImage(user.profileImage);
-          setPreviewImage(user.profileImage || "/default-profile.png");
-        })
-        .catch(() => {
-          alert("❌ 사용자 정보 불러오기 실패");
-        });
-    } else if (session?.user?.email && session?.accessToken) {
-      axios
-        .get(`${API_BASE_URL}/auth/users/email?email=${session.user.email}`, {
-          headers: { Authorization: `Bearer ${session.accessToken}` },
-        })
-        .then((res) => {
-          const user = res.data.data;
-          setNickname(user.nickname);
-          setEmail(user.email);
-          setProfileImage(user.profileImage);
-          setPreviewImage(user.profileImage || "/default-profile.png");
-        })
-        .catch(() => {
-          alert("❌ 구글 사용자 정보 불러오기 실패");
-        });
-    }
-  }, [session]);
+  if (userUUID && localToken) {
+    axios
+      .get(`${API_BASE_URL}/auth/users/${userUUID}`, {
+        headers: { Authorization: `Bearer ${localToken}` },
+      })
+      .then((res) => {
+        const user = res.data.data;
+        setNickname(user.nickname || nicknameFromSession); // 닉네임이 없다면 session에서 가져오기
+        setEmail(user.email);
+        setProfileImage(user.profileImage);
+        setPreviewImage(user.profileImage || "/default-profile.png");
+      })
+      .catch(() => {
+        alert("❌ 사용자 정보 불러오기 실패");
+      });
+  } else if (email && sessionToken) {
+    axios
+      .get(`${API_BASE_URL}/auth/users/email?email=${email}`, {
+        headers: { Authorization: `Bearer ${sessionToken}` },
+      })
+      .then((res) => {
+        const user = res.data.data;
+        setNickname(user.nickname || nicknameFromSession); // 닉네임이 없다면 session에서 가져오기
+        setEmail(user.email);
+        setProfileImage(user.profileImage);
+        setPreviewImage(user.profileImage || "/default-profile.png");
+      })
+      .catch(() => {
+        alert("❌ 구글 사용자 정보 불러오기 실패");
+      });
+  }
+}, [session]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,12 +76,8 @@ export default function MyPageEdit() {
     if (!nickname.trim()) return alert("닉네임을 입력해주세요.");
     if (!email.trim()) return alert("이메일을 입력해주세요.");
 
-    let token = getAccessToken();
-    let { userUUID } = getUserInfo();
-
-    if (!token && session?.accessToken) {
-      token = session.accessToken as string;
-    }
+    let token = getAccessToken() || session?.accessToken as string;
+    let userUUID = getUserInfo()?.userUUID;
 
     if (!userUUID && session?.user?.email && token) {
       try {
@@ -113,9 +116,7 @@ export default function MyPageEdit() {
       );
 
       alert("✅ 저장되었습니다.");
-
-      // ✅ 변경 사항 즉시 반영
-      router.replace("/mypage"); // 또는 window.location.reload();
+      router.replace("/mypage");
     } catch (err: any) {
       console.error("❌ 수정 실패:", err);
       alert("❌ 수정 실패: " + (err.response?.data?.msg || err.message));

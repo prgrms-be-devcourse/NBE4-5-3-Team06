@@ -25,6 +25,7 @@ const handler = NextAuth({
           });
     
           const data = await res.json();
+          console.log("📦 백엔드 응답:", data);
           if (data?.data?.token) {
             token.accessToken = data.data.token;
             token.userUUID = data.data.userUUID;

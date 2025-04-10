@@ -7,6 +7,7 @@ import com.example.backend2.domain.user.service.EmailService
 import com.example.backend2.domain.user.service.JwtBlacklistService
 import com.example.backend2.domain.user.service.UserService
 import com.example.backend2.global.dto.RsData
+import com.example.backend2.global.exception.ServiceException
 import com.example.backend2.global.utils.JwtProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
@@ -122,23 +123,23 @@ class UserController(
         val rsData = RsData("200", "테스트 계정이 삭제되었습니다.", mapOf("deletedCount" to count))
         return ResponseEntity.ok(rsData)
     }
-//
-//    @GetMapping("/users/email")
-//    fun getUserByEmail(
-//        @RequestParam email: String,
-//        @RequestHeader("Authorization") token: String
-//    ): ResponseEntity<RsData<UserCheckRequest>> {
-//        val tokenValue = token.removePrefix("Bearer ")
-//        val tokenEmail = jwtProvider.getUsername(tokenValue)
-//
-//        if (tokenEmail != email) {
-//            throw ServiceException("403", "다른 사용자의 정보를 조회할 수 없습니다.")
-//        }
-//
-//        val user = userService.getUserByEmail(email)
-//        val rsData = RsData("200", "사용자 조회 성공", UserCheckRequest.from(user))
-//        return ResponseEntity.ok(rsData)
-//    }
+
+    @GetMapping("/users/email")
+    fun getUserByEmail(
+        @RequestParam email: String,
+        @RequestHeader("Authorization") token: String
+    ): ResponseEntity<RsData<UserCheckRequest>> {
+        val tokenValue = token.removePrefix("Bearer ")
+        val tokenEmail = jwtProvider.getUsername(tokenValue)
+
+        if (tokenEmail != email) {
+            throw ServiceException("403", "다른 사용자의 정보를 조회할 수 없습니다.")
+        }
+
+        val user = userService.getUserByEmail(email)
+        val rsData = RsData("200", "사용자 조회 성공", UserCheckRequest.from(user))
+        return ResponseEntity.ok(rsData)
+    }
 
 
     @PostMapping("/token")
@@ -159,9 +160,9 @@ class UserController(
         return ResponseEntity.ok(
             RsData("200", "토큰 발급 성공", mapOf(
                 "token" to token,
-                "email" to user.email,
                 "userUUID" to user.userUUID,
                 "nickname" to user.nickname,
+                "email" to user.email,
                 "profileImage" to user.profileImage // null일 수도 있으니 프론트에서 처리
             ))
         )
