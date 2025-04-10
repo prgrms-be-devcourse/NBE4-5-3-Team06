@@ -16,7 +16,7 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password: "pk2258"
+#      password: "pk2258"
 
   h2:
     console:

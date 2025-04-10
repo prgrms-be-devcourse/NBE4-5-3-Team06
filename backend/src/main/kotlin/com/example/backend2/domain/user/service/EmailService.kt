@@ -25,7 +25,13 @@ class EmailService(
             throw ServiceException(HttpStatus.CONFLICT.value().toString(), "이미 존재하는 이메일입니다.")
         }
 
-        val verificationCode = generateCode()
+        // 테스트 전용 이메일에는 고정 코드 부여
+        val verificationCode = if (email.endsWith("@example.com")) {
+            "000000"
+        } else {
+            generateCode()
+        }
+
         val hashKey = getAuthHashKey(email)
 
         // Redis 에 인증 코드 저장 및 만료 시간 설정
