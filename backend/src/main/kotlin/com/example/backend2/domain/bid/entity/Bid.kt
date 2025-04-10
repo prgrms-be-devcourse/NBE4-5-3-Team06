@@ -16,20 +16,10 @@ data class Bid(
     val bidId: Long? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "AUCTION_ID", nullable = false)
-    val auction: Auction = Auction(
-        product = com.example.backend2.domain.product.entity.Product(),
-        startPrice = 0,
-        minBid = 0
-    ),
+    val auction: Auction? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_UUID", nullable = false)
-    val user: User = User(
-        userUUID = "",
-        email = "",
-        nickname = "",
-        password = "",
-        role = com.example.backend2.data.Role.USER
-    ),
+    val user: User? = null,
     @Column(name = "AMOUNT")
     val amount: Int = 0,
     @Column(name = "BID_TIME")

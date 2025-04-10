@@ -2,6 +2,7 @@ package com.example.backend2.domain.bid.controller
 
 import com.example.backend2.domain.auction.dto.AuctionBidRequest
 import com.example.backend2.domain.bid.dto.BidCreateResponse
+import com.example.backend2.domain.bid.service.BidLockService
 import com.example.backend2.domain.bid.service.BidService
 import com.example.backend2.global.utils.JwtProvider
 import com.example.backend2.global.websocket.dto.WebSocketResponse
@@ -17,6 +18,7 @@ import java.time.LocalDateTime
 @RequestMapping("/api/v1/auctions")
 class BidController(
     private val bidService: BidService,
+    private val bidLockService: BidLockService,
     private val jwtProvider: JwtProvider,
     private val simpMessagingTemplate: SimpMessagingTemplate,
 ) {
@@ -32,7 +34,7 @@ class BidController(
 
         log.info { "입찰 요청 수신, userUUID: $userUUID, nickname: $nickname, auctionId: ${request.auctionId}, amount: ${request.amount}" }
 
-        val response: BidCreateResponse = bidService.createBid(request.auctionId, request)
+        val response: BidCreateResponse = bidLockService.createBid(request.auctionId, request)
         // 입찰 성공 시 Websocket 메시지 보낼 데이터
 
         val res =

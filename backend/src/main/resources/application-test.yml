@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false
-    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false
     username: sa
     password:
+    driver-class-name: org.h2.Driver
 
   jpa:
     hibernate:
@@ -12,12 +12,23 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  sql:
-    init:
-      mode: never
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: "pk2258"
 
   h2:
     console:
       enabled: false
 
-# 프로파일 이름은 test로 고정
+jwt:
+  secret: testSecretKeyForIntegrationTestOnlyDoNotUseInProduction
+  expiration: 3600000 # 1시간
+
+# 프로파일 이름은 test로 고정.
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

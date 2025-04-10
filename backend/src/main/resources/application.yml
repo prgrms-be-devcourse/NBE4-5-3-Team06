@@ -59,7 +59,7 @@ spring:
 
   sql:
     init:
-      mode: always  # ✅ schema.sql과 data.sql 항상 실행되도록 설정
+      mode: always  # ✅ data.sql 항상 실행되도록 설정
       continue-on-error: true
 
   h2:
