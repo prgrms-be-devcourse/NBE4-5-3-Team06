@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 export default function AdminAuctionCreatePage() {
   const [productName, setProductName] = useState("");
@@ -14,13 +15,13 @@ export default function AdminAuctionCreatePage() {
   const [endTime, setEndTime] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [description, setDescription] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async () => {
     // 숫자 변환
     const startPriceNumber = Number(startPrice);
     const minBidNumber = Number(minBid);
-    const token = localStorage.getItem('accessToken');
-  
+    const token = localStorage.getItem("accessToken");
     // 📌 [로그 1] 입력값 확인
     console.log("📌 [경매 등록 요청 데이터 확인]:", {
       productName,
@@ -31,21 +32,18 @@ export default function AdminAuctionCreatePage() {
       imageUrl,
       description,
     });
-  
     // 📌 [로그 2] 토큰 확인
     console.log("📌 [전송할 토큰]:", token);
-  
     if (!token) {
       alert("로그인이 필요합니다.");
       return;
     }
-  
     try {
       const response = await fetch("http://localhost:8080/api/admin/auctions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           productName,
@@ -57,25 +55,18 @@ export default function AdminAuctionCreatePage() {
           description,
         }),
       });
-  
+
       // 📌 [로그 3] 응답 상태 코드 확인
       console.log("📌 [응답 상태]:", response.status);
-  
+
       const data = await response.json();
-  
+
       // 📌 [로그 4] 서버 응답 데이터 확인
       console.log("📌 [서버 응답 데이터]:", data);
-  
+
       if (response.ok) {
         alert("경매가 성공적으로 등록되었습니다!");
-        // 초기화
-        setProductName("");
-        setStartPrice("");
-        setMinBid("");
-        setStartTime("");
-        setEndTime("");
-        setImageUrl("");
-        setDescription("");
+        router.push("/admin/auctions");
       } else {
         alert(`경매 등록 실패: ${data.msg}`);
       }
