@@ -3,7 +3,8 @@ package com.example.backend2.domain.user.dto
 data class UserSignUpRequest(
     val email: String,
     val password: String,
-    val nickname: String
+    val nickname: String,
+    val skipEmailVerification: Boolean = false // 이메일 인증 건너뛰기 옵션 (테스트용)
 ) {
     init {
         require(email.isNotBlank()) { "이메일은 필수 입력 항목입니다." }

@@ -111,4 +111,13 @@ class UserController(
                     .status(HttpStatus.BAD_REQUEST)
                     .body(RsData("400", "인증코드가 일치하지 않습니다."))
         }
+
+    // 테스트 계정만 삭제하는 API (example.com 도메인 계정)
+    @DeleteMapping("/test-accounts")
+    fun deleteTestAccounts(): ResponseEntity<RsData<Map<String, Int>>> {
+        log.info { "테스트 계정 삭제 요청" }
+        val count = userService.deleteTestAccounts()
+        val rsData = RsData("200", "테스트 계정이 삭제되었습니다.", mapOf("deletedCount" to count))
+        return ResponseEntity.ok(rsData)
+    }
 }
