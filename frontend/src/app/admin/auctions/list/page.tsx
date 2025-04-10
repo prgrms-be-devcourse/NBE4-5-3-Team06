@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 // ✅ 서버 응답 타입 (status 제거)
 interface RawAuction {
@@ -36,6 +44,7 @@ interface Auction {
 export default function AdminAuctionListPage() {
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [filter, setFilter] = useState("all");
+  const router = useRouter();
 
   const now = dayjs();
 
@@ -57,16 +66,16 @@ export default function AdminAuctionListPage() {
 
       const normalizedAuctions: Auction[] = Array.isArray(result.data)
         ? result.data.map((a: RawAuction) => ({
-          auctionId: a.auctionId,
-          productName: a.productName,
-          startTime: a.startTime,
-          endTime: a.endTime,
-          highestBid: a.currentPrice,
-          startPrice: a.startPrice,
-          nickname: a.nickname,
-          winnerId: a.winningBid,
-          imageUrl: a.imageUrl?.trim(),
-        }))
+            auctionId: a.auctionId,
+            productName: a.productName,
+            startTime: a.startTime,
+            endTime: a.endTime,
+            highestBid: a.currentPrice,
+            startPrice: a.startPrice,
+            nickname: a.nickname,
+            winnerId: a.winningBid,
+            imageUrl: a.imageUrl?.trim(),
+          }))
         : [];
 
       setAuctions(normalizedAuctions);
@@ -83,21 +92,36 @@ export default function AdminAuctionListPage() {
   }, []);
 
   // ✅ 상태 구분
-  const ongoingAuctions = auctions.filter((a) =>
-    now.isAfter(dayjs(a.startTime)) && now.isBefore(dayjs(a.endTime))
+  const ongoingAuctions = auctions.filter(
+    (a) => now.isAfter(dayjs(a.startTime)) && now.isBefore(dayjs(a.endTime))
   );
-  const upcomingAuctions = auctions.filter((a) => now.isBefore(dayjs(a.startTime)));
-  const finishedAuctions = auctions.filter((a) => now.isAfter(dayjs(a.endTime)));
+  const upcomingAuctions = auctions.filter((a) =>
+    now.isBefore(dayjs(a.startTime))
+  );
+  const finishedAuctions = auctions.filter((a) =>
+    now.isAfter(dayjs(a.endTime))
+  );
 
   // ✅ 필터 적용
-  const applyFilter = (list: Auction[], type: "ONGOING" | "UPCOMING" | "FINISHED") => {
+  const applyFilter = (
+    list: Auction[],
+    type: "ONGOING" | "UPCOMING" | "FINISHED"
+  ) => {
     if (filter === "all") return list;
     return filter === type ? list : [];
   };
 
   return (
-    <div className="p-6 space-y-10"> {/* ✅ 리스트 간 여백 충분히 넓게 */}
-      <h1 className="text-2xl font-bold">경매 목록 (관리자)</h1>
+    <div className="p-6 space-y-10">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">경매 목록 (관리자)</h1>
+        <Button
+          onClick={() => router.push("/admin/auctions/create")}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          경매 생성하기
+        </Button>
+      </div>
 
       <Select onValueChange={setFilter} defaultValue="all">
         <SelectTrigger className="w-48">
@@ -116,16 +140,28 @@ export default function AdminAuctionListPage() {
       {/* ✅ 진행 중 */}
       {applyFilter(ongoingAuctions, "ONGOING").length > 0 && (
         <div className="mt-5">
-          <h2 className="text-xl font-bold text-red-600 mb-6">진행 중인 경매</h2>
-          <AuctionList auctions={applyFilter(ongoingAuctions, "ONGOING")} badge="LIVE" color="red" />
+          <h2 className="text-xl font-bold text-red-600 mb-6">
+            진행 중인 경매
+          </h2>
+          <AuctionList
+            auctions={applyFilter(ongoingAuctions, "ONGOING")}
+            badge="LIVE"
+            color="red"
+          />
         </div>
       )}
 
       {/* ✅ 예정 */}
       {applyFilter(upcomingAuctions, "UPCOMING").length > 0 && (
         <div className="mt-16">
-          <h2 className="text-xl font-bold text-yellow-500 mb-6">예정된 경매</h2>
-          <AuctionList auctions={applyFilter(upcomingAuctions, "UPCOMING")} badge="예정" color="yellow" />
+          <h2 className="text-xl font-bold text-yellow-500 mb-6">
+            예정된 경매
+          </h2>
+          <AuctionList
+            auctions={applyFilter(upcomingAuctions, "UPCOMING")}
+            badge="예정"
+            color="yellow"
+          />
         </div>
       )}
 
@@ -133,7 +169,11 @@ export default function AdminAuctionListPage() {
       {applyFilter(finishedAuctions, "FINISHED").length > 0 && (
         <div className="mt-16">
           <h2 className="text-xl font-bold text-gray-500 mb-6">종료된 경매</h2>
-          <AuctionList auctions={applyFilter(finishedAuctions, "FINISHED")} badge="종료" color="gray" />
+          <AuctionList
+            auctions={applyFilter(finishedAuctions, "FINISHED")}
+            badge="종료"
+            color="gray"
+          />
         </div>
       )}
     </div>
@@ -156,12 +196,13 @@ const AuctionList = ({
         <CardHeader className="relative">
           <CardTitle>{auction.productName}</CardTitle>
           <span
-            className={`absolute top-3 right-3 px-2 py-1 text-xs font-bold rounded-md ${color === "red"
+            className={`absolute top-3 right-3 px-2 py-1 text-xs font-bold rounded-md ${
+              color === "red"
                 ? "bg-red-600 text-white"
                 : color === "yellow"
-                  ? "bg-yellow-400 text-black"
-                  : "bg-gray-400 text-white"
-              }`}
+                ? "bg-yellow-400 text-black"
+                : "bg-gray-400 text-white"
+            }`}
           >
             {badge}
           </span>
@@ -182,20 +223,21 @@ const AuctionList = ({
             {badge === "예정"
               ? `시작가: ${auction.startPrice?.toLocaleString()}원`
               : badge === "종료"
-                ? `최종 낙찰가: ${auction.highestBid && auction.highestBid > 0
-                  ? `${auction.highestBid.toLocaleString()}원`
-                  : `${auction.startPrice?.toLocaleString()}원`
+              ? `최종 낙찰가: ${
+                  auction.highestBid && auction.highestBid > 0
+                    ? `${auction.highestBid.toLocaleString()}원`
+                    : `${auction.startPrice?.toLocaleString()}원`
                 }`
-                : `현재 입찰가: ${auction.highestBid && auction.highestBid > 0
-                  ? `${auction.highestBid.toLocaleString()}원`
-                  : `${auction.startPrice?.toLocaleString()}원`
+              : `현재 입찰가: ${
+                  auction.highestBid && auction.highestBid > 0
+                    ? `${auction.highestBid.toLocaleString()}원`
+                    : `${auction.startPrice?.toLocaleString()}원`
                 }`}
           </p>
 
           <p className="text-sm mt-2">낙찰자: {auction.nickname ?? "없음"}</p>
           <p className="text-sm">낙찰자 ID: {auction.winnerId ?? "없음"}</p>
         </CardContent>
-
       </Card>
     ))}
   </div>
