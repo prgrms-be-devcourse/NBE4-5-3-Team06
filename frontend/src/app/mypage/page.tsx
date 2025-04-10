@@ -28,12 +28,6 @@ export default function MyPage() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
   const { data: session, status } = useSession();
 
-  // ✅ 세션 로그 찍기
-  console.log("✅ session 정보:", session);
-  console.log("✅ session.status:", status);
-  console.log("✅ accessToken:", session?.accessToken);
-  console.log("✅ user:", session?.user);
-
   useEffect(() => {
     const fetchUserData = async () => {
       let token = getAccessToken();

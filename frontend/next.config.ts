@@ -21,8 +21,8 @@ const nextConfig = {
       "image.idus.com",
       "www.sleepmed.or.kr",
       "www.biz-con.co.kr",
-      "cdn.gpkorea.com", 
-      "lh3.googleusercontent.com"
+      "cdn.gpkorea.com",
+      "example.com",
     ],
   },
 
