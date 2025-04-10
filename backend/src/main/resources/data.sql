@@ -12,8 +12,7 @@ INSERT INTO USER_TABLE (USER_UUID, EMAIL, NICKNAME, PASSWORD, CREATED_DATE, MODI
 VALUES
     ('user1', 'user1@example.com', 'AuctionMaster', 'password123', '1990-01-01', '2025-03-05', 'USER'),
     ('user2', 'user2@example.com', 'BidKing', 'password456', '1985-06-15', '2025-03-05', 'USER'),
-    ('admin1', 'admin@example.com', 'AdminUser', 'adminpassword', '1980-12-30', '2025-03-05', 'ADMIN');
-
+    ('Admin1', 'admin@example.com', 'Admin', '$2a$10$lJO1tfsV1baFpqeMZ6msJe0hE4e5fC619Y6dbDsnTglFTtOHYrVui','1985-06-15', '2025-03-05', 'ADMIN' );
 --
 -- -- PRODUCT 테이블
 -- INSERT INTO PRODUCT_TABLE (PRODUCT_ID, PRODUCT_NAME, IMAGE_URL, DESCRIPTION)
