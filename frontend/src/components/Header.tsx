@@ -4,51 +4,55 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 export function Header() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { data: session, status } = useSession();
+  const [isLocalLoggedIn, setIsLocalLoggedIn] = useState(false);
 
-  // 로그인 상태 확인
+  // ✅ localStorage를 주기적으로 감시하여 전통 로그인 여부 체크
   useEffect(() => {
-    // 초기 로그인 상태 확인
-    checkLoginStatus();
+    const checkLocalLogin = () => {
+      const token = localStorage.getItem("accessToken");
+      setIsLocalLoggedIn(!!token);
+    };
 
-    // 로컬 스토리지 변경 이벤트 리스너 추가
-    window.addEventListener('storage', handleStorageChange);
-    
-    // 커스텀 이벤트 리스너 추가
-    window.addEventListener('login-status-change', checkLoginStatus);
+    checkLocalLogin(); // 초기 실행
+
+    // ✅ storage 이벤트 또는 주기적 체크를 통해 업데이트 감지
+    window.addEventListener("storage", checkLocalLogin);
+    const interval = setInterval(checkLocalLogin, 500); // 0.5초마다 확인
 
     return () => {
-      // 컴포넌트 언마운트 시 이벤트 리스너 제거
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('login-status-change', checkLoginStatus);
+      window.removeEventListener("storage", checkLocalLogin);
+      clearInterval(interval);
     };
   }, []);
 
-  // 로그인 상태 확인 함수
-  const checkLoginStatus = () => {
-    const token = localStorage.getItem("accessToken");
-    setIsLoggedIn(!!token);
-  };
+  // ✅ 전통 로그인 || 소셜 로그인 상태면 로그인 상태로 간주
+  const isLoggedIn = isLocalLoggedIn || status === "authenticated";
 
-  // 로컬 스토리지 변경 감지 함수
-  const handleStorageChange = (event: StorageEvent) => {
-    if (event.key === "accessToken") {
-      checkLoginStatus();
-    }
-  };
-
-  // 로그아웃 처리 함수
   const handleLogout = async () => {
     try {
-      // localStorage에서 토큰 가져오기
+      // 전통 로그인 로그아웃 처리
       const token = localStorage.getItem("accessToken");
-      if (!token) {
-        alert("로그인 정보가 없습니다.");
-        return;
+      if (token) {
+        const res = await fetch("http://localhost:8080/api/auth/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+          throw new Error("로그아웃 요청 실패");
+        }
+        localStorage.clear();
       }
+
+
+      // 소셜 로그인 로그아웃 처리
+      await signOut({ redirect: false });
 
       // 서버에 로그아웃 요청 (Authorization 헤더로 토큰 전송)
       const res = await fetch("http://localhost:8080/api/auth/logout", {
@@ -58,19 +62,8 @@ export function Header() {
         },
       });
 
-      if (!res.ok) {
-        throw new Error("로그아웃 요청 실패");
-      }
-
-      // localStorage에 저장된 인증 정보 삭제
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("nickname");
-      localStorage.removeItem("userUUID");
-      // 필요하면 다른 키도 삭제
-
-      setIsLoggedIn(false);
-      alert("로그아웃 되었습니다.");
-      router.push("/"); // 메인 페이지로 이동
+      
+      router.replace("/");
     } catch (error) {
       console.error("로그아웃 실패:", error);
       alert("로그아웃 실패");
@@ -85,16 +78,7 @@ export function Header() {
         </Link>
 
         <nav className="flex items-center gap-4">
-          {!isLoggedIn ? (
-            <>
-              <Link href="/auth/login">
-                <Button variant="ghost">로그인</Button>
-              </Link>
-              <Link href="/auth/register">
-                <Button>회원가입</Button>
-              </Link>
-            </>
-          ) : (
+          {isLoggedIn ? (
             <>
               <Link href="/mypage">
                 <Button variant="outline">마이페이지</Button>
@@ -102,6 +86,15 @@ export function Header() {
               <Button variant="outline" onClick={handleLogout}>
                 로그아웃
               </Button>
+            </>
+          ) : (
+            <>
+              <Link href="/auth/login">
+                <Button variant="ghost">로그인</Button>
+              </Link>
+              <Link href="/auth/register">
+                <Button>회원가입</Button>
+              </Link>
             </>
           )}
         </nav>

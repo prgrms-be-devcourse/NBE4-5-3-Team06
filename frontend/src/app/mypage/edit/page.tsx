@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { getAccessToken, getUserInfo } from "@/lib/api/auth";
+import { useSession } from "next-auth/react";
 
 export default function MyPageEdit() {
   const router = useRouter();
@@ -12,53 +13,91 @@ export default function MyPageEdit() {
   const [password, setPassword] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [previewImage, setPreviewImage] = useState("/default-profile.png");
+  const { data: session } = useSession();
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
   useEffect(() => {
-    const token = getAccessToken();
+    const localToken = getAccessToken();
     const { userUUID } = getUserInfo();
 
-    axios
-      .get(`http://localhost:8080/api/auth/users/${userUUID}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        setNickname(res.data.data.nickname);
-        setEmail(res.data.data.email);
-        setProfileImage(res.data.data.profileImage);
-        setPreviewImage(res.data.data.profileImage || "/default-profile.png");
-      })
-      .catch(() => {
-        alert("❌ 사용자 정보 불러오기 실패");
-      });
-  }, []);
+    if (userUUID) {
+      axios
+        .get(`${API_BASE_URL}/auth/users/${userUUID}`, {
+          headers: { Authorization: `Bearer ${localToken}` },
+        })
+        .then((res) => {
+          const user = res.data.data;
+          setNickname(user.nickname);
+          setEmail(user.email);
+          setProfileImage(user.profileImage);
+          setPreviewImage(user.profileImage || "/default-profile.png");
+        })
+        .catch(() => {
+          alert("❌ 사용자 정보 불러오기 실패");
+        });
+    } else if (session?.user?.email && session?.accessToken) {
+      axios
+        .get(`${API_BASE_URL}/auth/users/email?email=${session.user.email}`, {
+          headers: { Authorization: `Bearer ${session.accessToken}` },
+        })
+        .then((res) => {
+          const user = res.data.data;
+          setNickname(user.nickname);
+          setEmail(user.email);
+          setProfileImage(user.profileImage);
+          setPreviewImage(user.profileImage || "/default-profile.png");
+        })
+        .catch(() => {
+          alert("❌ 구글 사용자 정보 불러오기 실패");
+        });
+    }
+  }, [session]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
-      setPreviewImage(reader.result as string);
-      setProfileImage(reader.result as string);
+      const result = reader.result as string;
+      setPreviewImage(result);
+      setProfileImage(result);
     };
     reader.readAsDataURL(file);
   };
 
   const handleSave = async () => {
-    if (!nickname.trim()) {
-      alert("닉네임을 입력해주세요.");
-      return;
-    }
-    if (!email.trim()) {
-      alert("이메일을 입력해주세요.");
-      return;
+    if (!nickname.trim()) return alert("닉네임을 입력해주세요.");
+    if (!email.trim()) return alert("이메일을 입력해주세요.");
+
+    let token = getAccessToken();
+    let { userUUID } = getUserInfo();
+
+    if (!token && session?.accessToken) {
+      token = session.accessToken as string;
     }
 
-    const token = getAccessToken();
-    const { userUUID } = getUserInfo();
+    if (!userUUID && session?.user?.email && token) {
+      try {
+        const res = await axios.get(
+          `${API_BASE_URL}/auth/users/email?email=${encodeURIComponent(session.user.email)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        userUUID = res.data.data.userUUID;
+      } catch (e) {
+        console.error("❌ UUID 조회 실패", e);
+        return alert("UUID 조회 실패");
+      }
+    }
+
+    if (!userUUID || !token) {
+      return alert("사용자 인증 정보가 없습니다.");
+    }
 
     try {
       await axios.put(
-        `http://localhost:8080/api/auth/users/${userUUID}`,
+        `${API_BASE_URL}/auth/users/${userUUID}`,
         {
           nickname,
           email,
@@ -72,8 +111,11 @@ export default function MyPageEdit() {
           },
         }
       );
+
       alert("✅ 저장되었습니다.");
-      router.push("/mypage");
+
+      // ✅ 변경 사항 즉시 반영
+      router.replace("/mypage"); // 또는 window.location.reload();
     } catch (err: any) {
       console.error("❌ 수정 실패:", err);
       alert("❌ 수정 실패: " + (err.response?.data?.msg || err.message));
@@ -91,12 +133,7 @@ export default function MyPageEdit() {
         />
         <label className="px-4 py-2 bg-gray-200 rounded cursor-pointer hover:bg-gray-300">
           이미지 변경
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleImageChange}
-          />
+          <input type="file" accept="image/*" hidden onChange={handleImageChange} />
         </label>
       </div>
 

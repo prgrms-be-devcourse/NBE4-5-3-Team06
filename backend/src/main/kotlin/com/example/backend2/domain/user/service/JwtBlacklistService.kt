@@ -38,10 +38,16 @@ class JwtBlacklistService(
         redisCommon.setExpireAt(key, LocalDateTime.now().plusSeconds(ttlSeconds))
     }
 
-    // 블랙리스트 여부 확인
+    // 블랙리스트 여부 확인 - Redis 실패 시 false로 간주
     fun isBlacklisted(token: String): Boolean {
         val key = getKey(token)
-        return "true" == redisCommon.getFromHash(key, "blacklisted", String::class.java)
+        return try {
+            "true" == redisCommon.getFromHash(key, "blacklisted", String::class.java)
+        } catch (e: Exception) {
+            // Redis 연결 실패나 기타 오류 발생 시 로그 출력 후 false 반환
+            println("❌ Redis 블랙리스트 조회 실패: ${e.message}")
+            false
+        }
     }
 
     companion object {

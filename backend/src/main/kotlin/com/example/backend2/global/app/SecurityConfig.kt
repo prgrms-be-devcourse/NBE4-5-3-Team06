@@ -1,5 +1,6 @@
 package com.example.backend2.global.app
 
+import com.example.backend2.domain.user.service.CustomOAuth2UserService
 import com.example.backend2.global.filter.JwtAuthenticationFilter
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -9,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
+
 
 @Configuration
 @EnableWebSecurity
@@ -21,7 +23,7 @@ class SecurityConfig {
     @Throws(java.lang.Exception::class)
     fun securityFilterChain(
         http: HttpSecurity,
-        jwtAuthenticationFilter: JwtAuthenticationFilter?,
+        jwtAuthenticationFilter: JwtAuthenticationFilter?, customOAuth2UserService: CustomOAuth2UserService,
     ): SecurityFilterChain {
         http
             .cors { cors -> cors.configurationSource(corsConfigurationSource()) } // CORS 설정 (필요 시 disable 또는 설정)
@@ -48,7 +50,15 @@ class SecurityConfig {
                     .hasRole("ADMIN")
                     .anyRequest()
                     .permitAll()
+
             }.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .oauth2Login { oauth2 ->
+                oauth2.userInfoEndpoint { endpoint ->
+                    endpoint.userService(customOAuth2UserService)
+                }
+                oauth2.defaultSuccessUrl("/api/auth/success", true)
+            }
+
 
         return http.build()
     }

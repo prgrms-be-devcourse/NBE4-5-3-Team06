@@ -112,4 +112,4 @@ class WinnerTest {
         assertThat(winner.winningBid).isEqualTo(1500)
         assertThat(winner.winTime).isEqualTo(winTime)
     }
-} 
+}
