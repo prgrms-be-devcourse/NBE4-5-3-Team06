@@ -112,4 +112,5 @@ class RedisCommon(
         val seconds = template.getExpire(key, TimeUnit.SECONDS)
         return if (seconds == null || seconds < 0) null else LocalDateTime.now().plusSeconds(seconds)
     }
+
 }
