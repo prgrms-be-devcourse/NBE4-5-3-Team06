@@ -37,7 +37,7 @@ export const SignUpForm = () => {
   const handleEmailVerification = async () => {
     try {
       const response = await axios.post(
-        "http://35.203.149.35:8080/api/auth/send-code",
+        "http://localhost:8080/api/auth/send-code",
         { email }
       );
       if (response.data.code === "200") {
@@ -58,7 +58,7 @@ export const SignUpForm = () => {
   const handleCodeVerification = async () => {
     try {
       const response = await axios.post(
-        "http://35.203.149.35:8080/api/auth/vertify",
+        "http://localhost:8080/api/auth/verify",
         { email, code: inputCode }
       );
       if (response.data.code === "200") {

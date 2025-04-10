@@ -11,18 +11,31 @@ export function Header() {
   const { data: session, status } = useSession();
   const [isLocalLoggedIn, setIsLocalLoggedIn] = useState(false);
 
-  // 전통 로그인 (localStorage) 상태 확인
+  // ✅ localStorage를 주기적으로 감시하여 전통 로그인 여부 체크
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    setIsLocalLoggedIn(!!token);
+    const checkLocalLogin = () => {
+      const token = localStorage.getItem("accessToken");
+      setIsLocalLoggedIn(!!token);
+    };
+
+    checkLocalLogin(); // 초기 실행
+
+    // ✅ storage 이벤트 또는 주기적 체크를 통해 업데이트 감지
+    window.addEventListener("storage", checkLocalLogin);
+    const interval = setInterval(checkLocalLogin, 500); // 0.5초마다 확인
+
+    return () => {
+      window.removeEventListener("storage", checkLocalLogin);
+      clearInterval(interval);
+    };
   }, []);
 
-  // 두 방식 중 하나라도 로그인되어 있으면 로그인 상태로 간주
+  // ✅ 전통 로그인 || 소셜 로그인 상태면 로그인 상태로 간주
   const isLoggedIn = isLocalLoggedIn || status === "authenticated";
 
   const handleLogout = async () => {
     try {
-      // 전통 로그인 관련 로그아웃 처리
+      // 전통 로그인 로그아웃 처리
       const token = localStorage.getItem("accessToken");
       if (token) {
         const res = await fetch("http://localhost:8080/api/auth/logout", {
@@ -37,8 +50,9 @@ export function Header() {
         localStorage.clear();
       }
 
-      // ✅ 구글 로그아웃 처리 후 메인으로 이동
+      // 소셜 로그인 로그아웃 처리
       await signOut({ redirect: false });
+
       router.replace("/");
     } catch (error) {
       console.error("로그아웃 실패:", error);
