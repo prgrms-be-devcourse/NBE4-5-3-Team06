@@ -26,12 +26,15 @@ class UserService(
     }
 
     fun signup(request: UserSignUpRequest): UserSignUpResponse {
-        if (emailService.isVerificationExpired(request.email)) {
-            throw ServiceException(HttpStatus.UNAUTHORIZED.value().toString(), "이메일 인증이 만료되었습니다. 다시 인증해 주세요.")
-        }
+        // 테스트용 계정은 이메일 인증 건너뛰기
+        if (!request.skipEmailVerification) {
+            if (emailService.isVerificationExpired(request.email)) {
+                throw ServiceException(HttpStatus.UNAUTHORIZED.value().toString(), "이메일 인증이 만료되었습니다. 다시 인증해 주세요.")
+            }
 
-        if (!emailService.isVerified(request.email)) {
-            throw ServiceException(HttpStatus.UNAUTHORIZED.value().toString(), "이메일 인증이 완료되지 않았습니다.")
+            if (!emailService.isVerified(request.email)) {
+                throw ServiceException(HttpStatus.UNAUTHORIZED.value().toString(), "이메일 인증이 완료되지 않았습니다.")
+            }
         }
 
         // 이메일 혹은 닉네임으로 존재하는 유저가 있는지 확인
@@ -55,8 +58,10 @@ class UserService(
         // 데이터베이스에 저장
         userRepository.save(user)
 
-        // Redis에서 인증 정보 삭제
-        emailService.deleteVerificationCode(request.email)
+        // Redis에서 인증 정보 삭제 (skipEmailVerification이 false인 경우에만)
+        if (!request.skipEmailVerification) {
+            emailService.deleteVerificationCode(request.email)
+        }
 
         return UserSignUpResponse.from(user)
     }
@@ -115,5 +120,21 @@ class UserService(
             )
 
         return UserPutRequest.from(userRepository.save(updatedUser))
+    }
+
+    /**
+     * 테스트 계정(example.com 도메인 이메일)만 삭제하는 메서드
+     * @return 삭제된 계정 수
+     */
+    fun deleteTestAccounts(): Int {
+        val testEmailPattern = "%@example.com"
+        val testAccounts = userRepository.findAllByEmailPattern(testEmailPattern)
+        val count = testAccounts.size
+        
+        if (count > 0) {
+            userRepository.deleteAll(testAccounts)
+        }
+        
+        return count
     }
 }
