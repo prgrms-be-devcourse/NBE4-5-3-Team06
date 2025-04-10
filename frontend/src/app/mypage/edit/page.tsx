@@ -58,24 +58,42 @@ export default function MyPageEdit() {
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
-      setPreviewImage(reader.result as string);
-      setProfileImage(reader.result as string);
+      const result = reader.result as string;
+      setPreviewImage(result);
+      setProfileImage(result);
     };
     reader.readAsDataURL(file);
   };
 
   const handleSave = async () => {
-    if (!nickname.trim()) {
-      alert("닉네임을 입력해주세요.");
-      return;
-    }
-    if (!email.trim()) {
-      alert("이메일을 입력해주세요.");
-      return;
+    if (!nickname.trim()) return alert("닉네임을 입력해주세요.");
+    if (!email.trim()) return alert("이메일을 입력해주세요.");
+
+    let token = getAccessToken();
+    let { userUUID } = getUserInfo();
+
+    if (!token && session?.accessToken) {
+      token = session.accessToken as string;
     }
 
-    const token = getAccessToken();
-    const { userUUID } = getUserInfo();
+    if (!userUUID && session?.user?.email && token) {
+      try {
+        const res = await axios.get(
+          `${API_BASE_URL}/auth/users/email?email=${encodeURIComponent(session.user.email)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        userUUID = res.data.data.userUUID;
+      } catch (e) {
+        console.error("❌ UUID 조회 실패", e);
+        return alert("UUID 조회 실패");
+      }
+    }
+
+    if (!userUUID || !token) {
+      return alert("사용자 인증 정보가 없습니다.");
+    }
 
     try {
       await axios.put(
@@ -95,7 +113,9 @@ export default function MyPageEdit() {
       );
 
       alert("✅ 저장되었습니다.");
-      router.push("/mypage");
+
+      // ✅ 변경 사항 즉시 반영
+      router.replace("/mypage"); // 또는 window.location.reload();
     } catch (err: any) {
       console.error("❌ 수정 실패:", err);
       alert("❌ 수정 실패: " + (err.response?.data?.msg || err.message));
@@ -113,12 +133,7 @@ export default function MyPageEdit() {
         />
         <label className="px-4 py-2 bg-gray-200 rounded cursor-pointer hover:bg-gray-300">
           이미지 변경
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleImageChange}
-          />
+          <input type="file" accept="image/*" hidden onChange={handleImageChange} />
         </label>
       </div>
 

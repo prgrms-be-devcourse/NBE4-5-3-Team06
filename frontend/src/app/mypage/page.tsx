@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getAccessToken } from "@/lib/api/auth";
+import { getAccessToken, getUserInfo } from "@/lib/api/auth";
 
 interface User {
   nickname: string;
@@ -25,48 +25,64 @@ export default function MyPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [auctions, setAuctions] = useState<Auction[]>([]);
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
   useEffect(() => {
-    let uuid = userUUID || localStorage.getItem("userUUID");
-    if (!uuid) {
+    const localToken = getAccessToken();
+    const localUUID = getUserInfo()?.userUUID;
+    const accessToken = session?.accessToken || localToken;
+    const email = session?.user?.email;
+    const uuid = userUUID || session?.user?.userUUID || localUUID;
+
+    if (!accessToken) {
+      console.warn("⚠️ accessToken 누락");
       return;
     }
 
-    console.log("현재 userUUID 값:", uuid);
-
-    const token = getAccessToken();
     const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type":"application/json"
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     };
 
-    // 사용자 정보 가져오기
-    fetch(`${API_BASE_URL}/auth/users/${uuid}`, {headers})
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => data?.data && setUser(data.data))
-      .catch(console.error);
+    // 사용자 정보 요청 URL 결정
+    const userUrl = uuid
+      ? `${API_BASE_URL}/auth/users/${uuid}`
+      : email
+      ? `${API_BASE_URL}/auth/users/email?email=${email}`
+      : null;
 
-    // 낙찰 받은 경매 목록 가져오기
-    fetch(`${API_BASE_URL}/auctions/${uuid}/winner`, {headers})
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => data?.data && Array.isArray(data.data) ? setAuctions(data.data) : [])
-      .catch(console.error);
-  }, [userUUID]);
+    if (userUrl) {
+      fetch(userUrl, { headers })
+        .then((res) => (res.ok ? res.json() : Promise.reject("user fetch failed")))
+        .then((data) => data?.data && setUser(data.data))
+        .catch((err) => console.error("❌ 사용자 fetch 실패:", err));
+    }
+
+    if (uuid) {
+      fetch(`${API_BASE_URL}/auctions/${uuid}/winner`, { headers })
+        .then((res) => (res.ok ? res.json() : Promise.reject("auction fetch failed")))
+        .then((data) => data?.data && Array.isArray(data.data) ? setAuctions(data.data) : [])
+        .catch((err) => console.error("❌ 경매 fetch 실패:", err));
+    }
+  }, [userUUID, session]);
 
   return (
     <div className="max-w-3xl mx-auto p-6">
       {/* 프로필 정보 */}
       <div className="flex items-center gap-6 p-4 border rounded-lg shadow">
         <div className="w-20 h-20 bg-gray-300 rounded-full overflow-hidden">
-          <img src={user?.profileImage || "/default-profile.png"} alt="Profile" className="w-full h-full object-cover" />
+          <img
+            src={user?.profileImage || "/default-profile.png"}
+            alt="Profile"
+            className="w-full h-full object-cover"
+          />
         </div>
         <div>
           <p className="text-lg font-semibold">{user?.nickname || "닉네임"}</p>
           <p className="text-gray-600">{user?.email || "email@example.com"}</p>
         </div>
-        <button 
+        <button
           className="ml-auto px-3 py-2 bg-blue-500 text-white rounded"
           onClick={() => router.push("/mypage/edit")}
         >
@@ -80,7 +96,6 @@ export default function MyPage() {
         {auctions.length > 0 ? (
           auctions.map((auction) => (
             <div key={auction.auctionId} className="relative flex border rounded-lg p-4 shadow gap-4">
-              {/* 이미지 영역 (가로 길이 늘리기) */}
               <div className="w-60 h-40 bg-gray-200 overflow-hidden rounded-lg flex-shrink-0">
                 <img
                   src={auction.imageUrl || "/default-image.jpg"}
@@ -89,12 +104,8 @@ export default function MyPage() {
                   onError={(e) => (e.currentTarget.src = "/default-image.jpg")}
                 />
               </div>
-
-              {/* 상품 정보 영역 */}
               <div className="flex flex-col justify-center flex-1 relative">
-                {/* 오른쪽 상단 결제 대기중 표시 */}
                 <p className="absolute right-2 top-2 text-red-500 text-sm font-semibold">결제 대기중</p>
-
                 <p className="text-lg font-semibold">{auction.productName}</p>
                 <p className="text-sm text-gray-600">{auction.description || "설명 없음"}</p>
                 <p className="text-gray-500 text-sm">{new Date(auction.winTime).toLocaleString()}</p>
