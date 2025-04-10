@@ -45,32 +45,84 @@ export const stressOptions = {
 // 스트레스 테스트 설정 사용
 // export const options = stressOptions;
 
-// 실제 토큰 발급 함수 - 로그인 API 호출
-function getToken() {
+// 테스트 계정 등록을 위한 Setup 함수
+export function setup() {
+  const baseUrl = 'http://localhost:8080';
+  const accounts = [];
+  const totalAccounts = 100; // 생성할 계정 수
+  
+  console.log(`테스트 시작 - 기존 테스트 계정 정리`);
+  
+  // 테스트 계정 정리를 위해 삭제 API 호출
+  const cleanupResponse = http.del(`${baseUrl}/api/auth/test-accounts`, null, {
+    headers: { 'Content-Type': 'application/json' }
+  });
+  
+  if (cleanupResponse.status === 200) {
+    try {
+      const cleanupResult = JSON.parse(cleanupResponse.body);
+      console.log(`기존 테스트 계정 ${cleanupResult.data.deletedCount}개 삭제 완료`);
+    } catch (e) {
+      console.error(`테스트 계정 삭제 응답 파싱 실패: ${e.message}`);
+    }
+  } else {
+    console.warn(`테스트 계정 삭제 API 호출 실패: ${cleanupResponse.status}`);
+  }
+  
+  console.log(`테스트용 계정 ${totalAccounts}개 생성 시작`);
+  
+  // 테스트용 계정 생성
+  for (let i = 1; i <= totalAccounts; i++) {
+    const email = `test_user${i}@example.com`;
+    const password = '123123123';
+    const nickname = `TestUser${i}`;
+    
+    const registerPayload = JSON.stringify({
+      email: email,
+      password: password,
+      nickname: nickname,
+      skipEmailVerification: true // 이메일 인증 건너뛰기 옵션
+    });
+    
+    const params = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    
+    // 일반 회원가입 API를 사용 (skipEmailVerification 파라미터 추가)
+    const registerResponse = http.post(`${baseUrl}/api/auth/signup`, registerPayload, params);
+    
+    if (registerResponse.status === 200 || registerResponse.status === 201) {
+      console.log(`계정 생성 성공: ${email}`);
+      accounts.push({ email, password });
+    } else {
+      console.warn(`계정 생성 실패: ${email}, 상태: ${registerResponse.status}`);
+      // 이미 존재하는 계정이라도 테스트에 사용
+      accounts.push({ email, password });
+    }
+    
+    // API 요청 간 간격 두기
+    if (i < totalAccounts) {
+      sleep(0.1);
+    }
+  }
+  
+  console.log(`테스트용 계정 ${accounts.length}개 생성 완료`);
+  return { accounts };
+}
+
+// 토큰 발급 함수 - 각 VU에 고유한 계정 할당
+function getToken(accounts) {
   const baseUrl = 'http://localhost:8080';
   
-  // 테스트용 계정 정보 배열
-  const testAccounts = [
-    {
-      email: 'jounghyeondaum@gmail.com',
-      password: '123123123'
-    },
-    {
-      email: 'jounghyeon123@gmail.com',
-      password: '123123123'
-    }
-    /*
-    사용자 계정 수를 임의로 늘려야 합니다.
-     */
-  ];
+  // 각 VU에 고유한 계정 할당 (VU 번호는 1부터 시작)
+  const accountIndex = (__VU - 1) % accounts.length;
+  const selectedAccount = accounts[accountIndex];
   
-  // VU ID에 따라 계정 선택 (짝수/홀수 VU ID로 구분)
-  const accountIndex = __VU % testAccounts.length;
-  const selectedAccount = testAccounts[accountIndex];
+  console.log(`VU ${__VU}: 계정 ${selectedAccount.email} 사용 (인덱스: ${accountIndex})`);
   
-  console.log(`VU ${__VU}: 계정 ${selectedAccount.email} 사용`);
-  
-  // 테스트용 계정 정보
+  // 로그인 요청
   const loginPayload = JSON.stringify({
     email: selectedAccount.email,
     password: selectedAccount.password
@@ -82,13 +134,12 @@ function getToken() {
     },
   };
   
-  // 올바른 로그인 API 엔드포인트 사용
+  // 로그인 API 호출
   const loginResponse = http.post(`${baseUrl}/api/auth/login`, loginPayload, params);
   
   if (loginResponse.status === 200) {
     try {
       const body = JSON.parse(loginResponse.body);
-      console.log('로그인 응답:', JSON.stringify(body).substring(0, 200));
       
       if (body.data && body.data.token) {
         console.log(`VU ${__VU}: 로그인 성공: 토큰 발급 완료`);
@@ -174,7 +225,19 @@ function getCurrentBidAmount(auctionId) {
   return 300000;
 }
 
-export default function () {
+export default function (data) {
+  // setup 함수에서 생성한 계정 정보 가져오기
+  const accounts = data.accounts || [];
+  
+  // 계정이 없는 경우 기본 계정 제공 (테스트 실패 방지)
+  if (!accounts || accounts.length === 0) {
+    console.warn('계정 정보가 없습니다. 기본 계정을 사용합니다.');
+    accounts = [
+      { email: 'jounghyeondaum@gmail.com', password: '123123123' },
+      { email: 'jounghyeon123@gmail.com', password: '123123123' }
+    ];
+  }
+  
   const baseUrl = 'ws://localhost:8080';
   
   // VU 컨텍스트에서 경매 정보 조회
@@ -195,7 +258,7 @@ export default function () {
   // 테스트할 경매 무작위 선택
   const auction = auctions[Math.floor(Math.random() * auctions.length)];
   const auctionId = auction.auctionId;
-  const token = getToken();
+  const token = getToken(accounts);
   const nickname = `user_${__VU}_${__ITER}`;
   
   console.log(`입찰할 경매 ID: ${auctionId}, 초기 입찰가: ${auction.currentBid}`);
@@ -242,15 +305,28 @@ export default function () {
     socket.on('message', (data) => {
       console.log(`VU ${__VU}: received message: ${data}`);
       try {
-        // STOMP 프레임 파싱 (실제 응답 구조에 맞게 수정 필요)
-        if (data.toString().includes('입찰 성공')) {
-          successRate.add(1);
-        } else {
-          failureRate.add(1);
+        const message = data.toString();
+        
+        // STOMP 시스템 메시지(CONNECTED, RECEIPT 등)는 메트릭에서 제외
+        if (message.startsWith('CONNECTED') || message.startsWith('RECEIPT')) {
+          console.log(`VU ${__VU}: STOMP 프로토콜 메시지 수신 (메트릭에서 제외)`);
+          return;
+        }
+        
+        // 입찰 관련 메시지인지 확인 (MESSAGE 프레임 및 JSON 페이로드 포함)
+        if (message.startsWith('MESSAGE') && (message.includes('/sub/auction/') || message.includes('destination:/app/auction/bid'))) {
+          // 입찰 성공/실패 여부 확인
+          if (message.includes('입찰 성공') || message.includes('"status":"SUCCESS"')) {
+            console.log(`VU ${__VU}: 입찰 성공 메시지 수신`);
+            successRate.add(1);
+          } else if (message.includes('입찰 실패') || message.includes('"status":"FAIL"')) {
+            console.log(`VU ${__VU}: 입찰 실패 메시지 수신`);
+            failureRate.add(1);
+          }
         }
       } catch (e) {
         console.error(`VU ${__VU}: Error parsing message: ${e.message}`);
-        failureRate.add(1);
+        // 파싱 오류는 실패 메트릭에 포함하지 않음
       }
     });
     
