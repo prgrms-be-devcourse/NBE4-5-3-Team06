@@ -38,6 +38,12 @@ class EmailService(
         redisCommon.putInHash(hashKey, "code", verificationCode)
         redisCommon.setExpireAt(hashKey, LocalDateTime.now().plusSeconds(VERIFICATION_CODE_EXPIRATION.toLong()))
 
+        // 테스트용 이메일은 실제 전송 생략
+        if (email.endsWith("@example.com")) {
+            log.info { "테스트용 이메일($email)에 인증코드 $verificationCode 부여됨 - 실제 이메일 전송 생략" }
+            return
+        }
+
         try {
             // HTML 이메일을 전송하기 위해 MimeMessage 사용
             val message = mainSender.createMimeMessage()
