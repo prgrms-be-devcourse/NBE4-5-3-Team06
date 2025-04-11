@@ -20,7 +20,7 @@ class RedissonConfig(
         config
             .useSingleServer()
             .setAddress("redis://$host:$port")
-//            .setPassword(password)
+//           .setPassword(password)
         return Redisson.create(config)
     }
 }

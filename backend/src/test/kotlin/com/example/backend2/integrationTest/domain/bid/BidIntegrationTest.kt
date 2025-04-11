@@ -279,7 +279,7 @@ class BidIntegrationTest {
                 amount = 11000, // 최소 입찰가
                 token = bidderTokens[0]
             )
-            
+
             val response = bidService.createBid(singleBidRequest.auctionId, singleBidRequest)
             successfulBids.add(singleBidRequest.amount)
             println("첫 입찰 성공: ${singleBidRequest.amount}")
@@ -291,7 +291,7 @@ class BidIntegrationTest {
         // 나머지 입찰 시도
         bidders.forEachIndexed { index, _ ->
             if (index == 0) return@forEachIndexed // 첫 번째 사용자는 이미 입찰 완료
-            
+
             try {
                 val bidRequest =
                     AuctionBidRequest(
@@ -320,7 +320,7 @@ class BidIntegrationTest {
             // 입찰이 모두 실패한 경우 테스트를 건너뛰기
             return
         }
-        
+
         // 최소한 하나 이상의 입찰이 성공한 경우에만 검증
         assertThat(successfulBids).isNotEmpty()
         val highestExpectedBid = successfulBids.maxOrNull() ?: 10000

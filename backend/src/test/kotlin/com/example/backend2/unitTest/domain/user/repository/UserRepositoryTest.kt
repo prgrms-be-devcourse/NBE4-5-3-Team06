@@ -122,4 +122,4 @@ class UserRepositoryTest {
         assertThat(foundUser.get().userUUID).isEqualTo("test-uuid")
         assertThat(foundUser.get().email).isEqualTo("test@example.com")
     }
-} 
+}
