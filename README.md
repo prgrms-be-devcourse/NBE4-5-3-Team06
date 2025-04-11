@@ -27,6 +27,9 @@
 - **WebSocket을 활용하여 실시간 입찰 데이터 업데이트**
 - **Redis 및 Kafka를 사용하여 동시성 문제 해결 및 성능 최적화**
 - **JWT 기반 인증 및 보안 강화**
+- **단위/통합/E2E** 테스트 및 github action을 사용한 테스트 자동화
+- **k6**를 사용한 부하테스트
+
 <br/>
 
 ## 3. 주요 기능
@@ -42,7 +45,7 @@
 ## 기술 스택
 ### 💻 언어
 <div align="left">
-  <img src="https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java" />
+  <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java" />
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
 </div>
 
@@ -53,6 +56,14 @@
   <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot" />
   <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
   <img src="https://img.shields.io/badge/Shadcn_UI-111827?style=for-the-badge&logoColor=white" alt="ShadCN UI" />
+</div>
+
+<br/>
+
+### ♻️ 테스트 도구
+<div align="left">
+  <img src="https://img.shields.io/badge/k6-7D64FF?style=for-the-badge&logoColor=white" alt="k6" />
+  <img src="https://img.shields.io/badge/JUnit5-25A162?style=for-the-badge&logoColor=white" alt="JUnit5" />
 </div>
 
 <br/>
