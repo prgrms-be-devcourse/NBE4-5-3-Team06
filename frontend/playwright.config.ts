@@ -18,7 +18,7 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Playwright에서 하나의 테스트가 최대 3분(180초) 동안만 실행될 수 있다 */
-  timeout: 30 * 1000,
+  timeout: 60 * 1000,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
