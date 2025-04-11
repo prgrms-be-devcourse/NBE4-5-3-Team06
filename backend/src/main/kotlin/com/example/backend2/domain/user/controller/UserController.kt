@@ -7,6 +7,8 @@ import com.example.backend2.domain.user.service.EmailService
 import com.example.backend2.domain.user.service.JwtBlacklistService
 import com.example.backend2.domain.user.service.UserService
 import com.example.backend2.global.dto.RsData
+import com.example.backend2.global.exception.ServiceException
+import com.example.backend2.global.utils.JwtProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,6 +21,7 @@ class UserController(
     private val userService: UserService,
     private val blacklistService: JwtBlacklistService,
     private val emailService: EmailService,
+    private val jwtProvider: JwtProvider,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -120,4 +123,51 @@ class UserController(
         val rsData = RsData("200", "테스트 계정이 삭제되었습니다.", mapOf("deletedCount" to count))
         return ResponseEntity.ok(rsData)
     }
+
+    @GetMapping("/users/email")
+    fun getUserByEmail(
+        @RequestParam email: String,
+        @RequestHeader("Authorization") token: String
+    ): ResponseEntity<RsData<UserCheckRequest>> {
+        val tokenValue = token.removePrefix("Bearer ")
+        val tokenEmail = jwtProvider.getUsername(tokenValue)
+
+        if (tokenEmail != email) {
+            throw ServiceException("403", "다른 사용자의 정보를 조회할 수 없습니다.")
+        }
+
+        val user = userService.getUserByEmail(email)
+        val rsData = RsData("200", "사용자 조회 성공", UserCheckRequest.from(user))
+        return ResponseEntity.ok(rsData)
+    }
+
+
+    @PostMapping("/token")
+    fun issueJwt(@RequestBody request: JwtRequest): ResponseEntity<RsData<Map<String, String?>>> {
+        println("요청 받은 이메일: ${request.email}")
+
+        // 사용자 조회 시 없으면 자동 등록
+        val user = userService.findOrCreateGoogleUser(request.email)
+
+        val claims = mapOf(
+            "userUUID" to user.userUUID,
+            "nickname" to user.nickname,
+            "role" to "ROLE_${user.role}",
+            "sub" to user.email
+        )
+
+        val token = jwtProvider.generateToken(claims, user.email)
+        return ResponseEntity.ok(
+            RsData("200", "토큰 발급 성공", mapOf(
+                "token" to token,
+                "userUUID" to user.userUUID,
+                "nickname" to user.nickname,
+                "email" to user.email,
+                "profileImage" to user.profileImage // null일 수도 있으니 프론트에서 처리
+            ))
+        )
+    }
+
+
+    data class JwtRequest(val email: String)
 }
